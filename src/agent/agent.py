@@ -1,20 +1,39 @@
 from typing import List, Tuple, Callable, Any, Optional, Dict
 
-from src.information import Information
-from src.interaction_history import InteractionHistory
-from src.utils.task_utils import TaskSpec
+from src.agent.actions import get_all_available_action_description_pairs
+from src.typed_dicts.information import Information
+from src.typed_dicts.interaction_history import InteractionHistory
+from src.typed_dicts.task_spec import TaskSpec
 
 
 class Agent:
-    agent_id: str
-    role_description: str
-    action_description_pairs: List[Tuple[Callable[..., Any], Optional[str]]]
-    task_specs: List[TaskSpec]
+    """
+    Agent config-related attributes.
+    """
+    _agent_id: str
+    _role_description: str
+    _action_description_pairs: List[Tuple[Callable[..., Any], Optional[str]]]
+    _task_specs: List[TaskSpec]
 
-    interaction_history: List[InteractionHistory]
-    information_queues: List[Any]  # TODO: The specific type is to be determined later.
+    """
+    Useful data for making decisions.
+    """
+    _current_objective: List[str]
+    # A list of task names being already executed for this objective.
+    _task_history: List[str]
+    # A collection of information to be processed at once.
+    _information_cache: List[Information]
 
-    agent_data_file_path: str
+    _interaction_history: List[InteractionHistory]
+    # TODO: We need to decide if we should just use a regular queue or a priority queue.
+    _in_information_queues: Dict[str, List[Information]]
+    _out_information_queues: Dict[str, List[Information]]
+
+    _agent_data_file_path: str
+
+    """
+    Constructor
+    """
 
     def __init__(self):
         """
@@ -24,35 +43,43 @@ class Agent:
         It can also analyze user's input and decide if it needs to perform specific tasks to fulfill
         user's need or perform its duty, as specified by its role description.
         """
-        pass
+        raise NotImplementedError
+
+    """
+    Public methods as the way user/environment can interact with an agent. 
+    """
 
     def listen(self, user_input: str):
         """
         Allows users to communicate in text with the agent.
         :param user_input: A string provided by the user trying to engage with the agent.
         """
-        pass
+        raise NotImplementedError
 
-    def _record_interaction(self, content: str, is_user_input):
+    def see(self, environment_image_path: str):
         """
-        Record interaction history.
-        :param content: User input or response by the agent.
-        :param is_user_input: Whether it is user input.
+        Allows the agent to be shown specific useful environmental information.
+        :param environment_image_path: The path to the environment image.
         """
-        pass
+        raise NotImplementedError
 
-    def _write(self):
+    def register_information_source(self, information_source_name: str):
         """
-        Periodically persists agent-related data to perm storage in the file system.
+        Register the information source.
+        :param information_source_name: Name of the information source.
         """
-        pass
+        self._register_information_source(information_source_name)
 
-    def _read(self):
+    """
+    Private methods representing the internal capabilities of an agent.
+    """
+
+    def _register_information_source(self, information_source_name: str):
         """
-        Read from the file system past agent-related data and re-populate
-        related agent state values.
+        Register the information source.
+        :param information_source_name: Name of the information source.
         """
-        pass
+        raise NotImplementedError
 
     def _monitor(self):
         """
@@ -60,7 +87,7 @@ class Agent:
         Whenever a new piece of information is available, pick one and process it
         in the round-robin fashion.
         """
-        pass
+        raise NotImplementedError
 
     def _process(self, information: Information) -> str:
         """
@@ -73,14 +100,7 @@ class Agent:
             and the actual data.
         :return:
         """
-        pass
-
-    def _register_information_source(self, information_name: str):
-        """
-        Register the information source.
-        :param information_name: Name of the information source.
-        """
-        pass
+        raise NotImplementedError
 
     def _pick_a_task(self, information: Information) -> TaskSpec:
         """
@@ -89,7 +109,7 @@ class Agent:
         :param information: The information to be processed by the agent.
         :return: The task chosen by the agent.
         """
-        pass
+        raise NotImplementedError
 
     def _execute_a_task(self, task_spec: Dict, arg_key2arg_val: Dict) -> dict:
         """
@@ -98,15 +118,53 @@ class Agent:
 
         :param task_spec:
         :param arg_key2arg_val:
-        :return:
+        :return: A dict containing the task result.
         """
-        pass
+        raise NotImplementedError
 
-    def _formulate_response(self, results: List[Dict]) -> str:
-        pass
+    """
+    Hard-coded tasks that is shared by all agents. 
+    """
+
+    def _record_interaction(self, content: str, is_user_input):
+        """
+        Record interaction history.
+        :param content: User input or response by the agent.
+        :param is_user_input: Whether it is user input.
+        """
+        raise NotImplementedError
+
+    def _write(self):
+        """
+        Periodically persists agent-related data to perm storage in the file system.
+        """
+        raise NotImplementedError
+
+    def _read(self):
+        """
+        Read from the file system past agent-related data and re-populate
+        related agent state values.
+        """
+        raise NotImplementedError
 
     def _talk(self) -> str:
         """
         Talks back to the user given formulated response.
         """
-        pass
+        raise NotImplementedError
+
+    def _clear_objective(self):
+        self._current_objective = []
+        self._task_history = []
+        self._information_cache = []
+
+    # A placeholder for a future action which allows an agent to define and name its own action
+    #   and have the action stored in the proper path of the file system. After the definition,
+    #   the action should trigger also _load_action_description_pairs to make the action ready.
+
+    """
+    Methods for setting up an agent or to update an agent.
+    """
+
+    def _load_action_description_pairs(self):
+        self._action_description_pairs = get_all_available_action_description_pairs()

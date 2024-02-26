@@ -1,17 +1,13 @@
-from typing import TypedDict
-
-
-class TaskSpec(TypedDict):
-    pass
+from src.typed_dicts.task_spec import TaskSpec
 
 
 def parse_task_spec(task_spec_text: str) -> TaskSpec:
-    pass
+    raise NotImplementedError
 
 
 def validate_task_spec(task_spec_text: str) -> str:
-    pass
+    raise NotImplementedError
 
 
 def load_task_spec(task_spec_path: str) -> str:
-    pass
+    raise NotImplementedError

@@ -7,4 +7,4 @@ def get_all_available_action_description_pairs() -> List[Tuple[Callable[..., Any
     descriptions.
     :return:
     """
-    pass
+    raise NotImplementedError
