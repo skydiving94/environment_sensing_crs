@@ -3,7 +3,13 @@ from typing import List, Tuple, Callable, Any, Optional, Dict
 from src.agent.actions import get_all_available_action_description_pairs
 from src.typed_dicts.information import Information
 from src.typed_dicts.interaction_history import InteractionHistory
-from src.typed_dicts.task_spec import TaskSpec
+from src.task.task_spec import TaskSpec
+from src.utils.prompt_utils import extract_replaceable_keys
+
+
+AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE = 'current_objective'
+AGENT_SPECIFIC_INFO_INFORMATION_QUEUE_NAMES = 'information_queue_names'
+AGENT_SPECIFIC_INFO_CACHED_INFORMATION_NAMES = 'information_cache'
 
 
 class Agent:
@@ -158,6 +164,8 @@ class Agent:
         self._task_history = []
         self._information_cache = []
 
+        # Also, reset the priorities for all information sources to default value.
+
     # A placeholder for a future action which allows an agent to define and name its own action
     #   and have the action stored in the proper path of the file system. After the definition,
     #   the action should trigger also _load_action_description_pairs to make the action ready.
@@ -168,3 +176,32 @@ class Agent:
 
     def _load_action_description_pairs(self):
         self._action_description_pairs = get_all_available_action_description_pairs()
+
+    def _build_replacement_key_to_val(self, prompt_template: str) -> Dict[str, str]:
+        """
+        Given a prompt template, collect information an agent has and replace the keys with
+        the found values.
+        :param prompt_template: The prompt template potentially with keys that need to be replaced
+            with values.
+        :return: A dict mapping replaceable key to its value.
+        """
+
+        replaceable_keys = extract_replaceable_keys(prompt_template)
+        replacement_key_to_val = dict()
+
+        for replaceable_key in replaceable_keys:
+            if replaceable_key == AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE:
+                replacement_key_to_val[replaceable_key] = self._current_objective[0] \
+                    if len(self._current_objective) > 0 else 'No Objective'
+            elif replaceable_key == AGENT_SPECIFIC_INFO_INFORMATION_QUEUE_NAMES:
+                replacement_key_to_val[replaceable_key] = (
+                    ', '.join(self._in_information_queues.keys()))
+            elif replaceable_key == AGENT_SPECIFIC_INFO_CACHED_INFORMATION_NAMES:
+                replacement_key_to_val[replaceable_key] = (
+                    map(lambda info: info.name, self._information_cache))
+            else:
+                # TODO: Lookup in _information_cache for an information whose name matches
+                #   replaceable_key.
+                raise NotImplementedError
+
+        return replacement_key_to_val
