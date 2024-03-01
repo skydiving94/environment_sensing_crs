@@ -9,7 +9,8 @@ from src.utils.prompt_utils import load_prompt_template, replace_all_keys_in_pro
 
 load_dotenv()
 
-PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT = load_prompt_template('PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT_PATH')
+PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT = load_prompt_template(
+    'PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT_PATH')
 
 
 class TaskSpec:
@@ -39,8 +40,16 @@ class TaskSpec:
     # The action pipeline.
     action_names: List[str]
 
-    def __init__(self, task_spec_str: str):
+    def __init__(self, task_spec_str: str = None, task_spec_path: str = None):
+        if ((task_spec_str is None and task_spec_path is None)
+                or (task_spec_str is not None and task_spec_path is not None)):
+            raise ValueError('Exactly one of task_spec_str or task_spec_path should be provided.')
+        elif task_spec_path is not None:
+            with open(task_spec_path) as fp:
+                task_spec_str = fp.read()
+
         task_spec_dict = json.loads(task_spec_str)
+        output_information_spec = task_spec_dict['output_information_spec']
         self.name = task_spec_dict['name']
         self.description = task_spec_dict['description']
 
@@ -48,9 +57,10 @@ class TaskSpec:
         self.task_prompt_template = load_prompt_template(task_spec_dict['task_prompt_template'])
 
         self.input_information_names = task_spec_dict['input_information_names']
-        self.output_information_spec = parse_information_spec(
-            task_spec_dict['output_information_spec'])
-        self.output_information_spec_str = json.dumps(task_spec_dict['output_information_spec'])
+        self.output_information_spec = \
+            {k: parse_information_spec(v) for k, v in output_information_spec.items()}
+        self.output_information_spec_str = json.dumps(output_information_spec)
+        self.action_names = task_spec_dict['action_names']
 
     def build_task_instance(self,
                             system_prompt_key_to_val: Dict[str, str],
@@ -61,7 +71,8 @@ class TaskSpec:
             (replace_all_keys_in_prompt_template(self.task_prompt_template,
                                                  task_prompt_key_to_val)
              + replace_all_keys_in_prompt_template(PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT,
-                                                   {'output_format': self.output_information_spec_str}))
+                                                   {
+                                                       'output_format': self.output_information_spec_str}))
         return TaskInstance(name=self.name,
                             system_prompt=system_prompt,
                             task_prompt=task_prompt,

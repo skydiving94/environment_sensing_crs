@@ -2,10 +2,14 @@ import os
 import re
 from typing import Dict, Set
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def load_prompt_template(prompt_template: str) -> str:
     prompt_template_path = os.getenv(prompt_template)
-    if prompt_template_path is not None and os.path.exists(os.getenv(prompt_template_path)):
+    if prompt_template_path is not None and os.path.exists(prompt_template_path):
         with open(prompt_template_path) as fp:
             return fp.read()
     else:

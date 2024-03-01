@@ -54,8 +54,13 @@ def parse_information_spec(information_spec_dict: dict) -> InformationSpec:
                                          min_val=min_val if min_val is not None else -float('inf'),
                                          max_val=max_val if max_val is not None else float('inf'))
         case InformationType.ARRAY:
-            raise NotImplementedError
+            return ArrayInformationSpec(information_type=information_type,
+                                        item_type=information_spec_dict['item_type'])
+        case InformationType.TUPLE:
+            return TupleInformationSpec(information_type=information_type,
+                                        elements=information_spec_dict['elements'])
         case InformationType.OBJECT:
-            raise NotImplementedError
+            return ObjectInformationSpec(information_type=information_type,
+                                         properties=information_spec_dict['properties'])
         case _:
             raise TypeError
