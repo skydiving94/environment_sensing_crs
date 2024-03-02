@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
 
@@ -34,21 +34,15 @@ class TaskSpec:
     input_information_names: List[str]
 
     # Names and types of the information produced by the task
-    output_information_spec: InformationSpec
+    output_information_spec: Dict[str, InformationSpec]
     output_information_spec_str: str
 
     # The action pipeline.
     action_names: List[str]
 
-    def __init__(self, task_spec_str: str = None, task_spec_path: str = None):
-        if ((task_spec_str is None and task_spec_path is None)
-                or (task_spec_str is not None and task_spec_path is not None)):
-            raise ValueError('Exactly one of task_spec_str or task_spec_path should be provided.')
-        elif task_spec_path is not None:
-            with open(task_spec_path) as fp:
-                task_spec_str = fp.read()
+    def __init__(self, task_spec_str: Optional[str] = None, task_spec_path: Optional[str] = None):
+        task_spec_dict = self._load_task_spec_dict(task_spec_path, task_spec_str)
 
-        task_spec_dict = json.loads(task_spec_str)
         output_information_spec = task_spec_dict['output_information_spec']
         self.name = task_spec_dict['name']
         self.description = task_spec_dict['description']
@@ -77,3 +71,18 @@ class TaskSpec:
                             system_prompt=system_prompt,
                             task_prompt=task_prompt,
                             action_names=self.action_names)
+
+    @staticmethod
+    def _load_task_spec_dict(task_spec_path, task_spec_str):
+        if ((task_spec_str is None and task_spec_path is None)
+                or (task_spec_str is not None and task_spec_path is not None)):
+            raise ValueError('Exactly one of task_spec_str or task_spec_path should be provided.')
+        elif task_spec_path is not None:
+            with open(task_spec_path) as fp:
+                task_spec_str = fp.read()
+                task_spec_dict = json.loads(task_spec_str)
+        elif task_spec_str is not None:
+            task_spec_dict = json.loads(task_spec_str)
+        else:
+            raise ValueError
+        return task_spec_dict

@@ -1,7 +1,7 @@
 from typing import List, Tuple, Callable, Any, Optional, Dict
 
 from src.agent.actions import get_all_available_action_description_pairs
-from src.utils.typed_dicts import Information
+from src.utils.typed_dicts.information import Information
 from src.utils.typed_dicts.interaction_history import InteractionHistory
 from src.task.task_spec import TaskSpec
 from src.utils.prompt_utils import extract_replaceable_keys
@@ -198,7 +198,7 @@ class Agent:
                     ', '.join(self._in_information_queues.keys()))
             elif replaceable_key == AGENT_SPECIFIC_INFO_CACHED_INFORMATION_NAMES:
                 replacement_key_to_val[replaceable_key] = (
-                    map(lambda info: info.name, self._information_cache))
+                    ', '.join(map(lambda info: info['name'], self._information_cache)))
             else:
                 # TODO: Lookup in _information_cache for an information whose name matches
                 #   replaceable_key.

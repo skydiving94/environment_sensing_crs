@@ -1,7 +1,7 @@
 from typing import List
 
-from src.utils.typed_dicts import Information
-from src.utils.typed_dicts import ReviewResult
+from src.utils.typed_dicts.information import Information
+from src.utils.typed_dicts.review_result import ReviewResult
 
 
 def do_review(

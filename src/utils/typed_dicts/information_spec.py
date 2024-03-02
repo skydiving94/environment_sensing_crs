@@ -36,6 +36,7 @@ InformationSpec = Union[
     GenericInformationSpec,
     NumberInformationSpec,
     ArrayInformationSpec,
+    TupleInformationSpec,
     ObjectInformationSpec
 ]
 

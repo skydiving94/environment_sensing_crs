@@ -3,7 +3,7 @@ from typing import TypedDict
 
 class Information(TypedDict):
     name: str
-    raise NotImplementedError
+    raise NotImplementedError  # type: ignore
 
 
 def parse_information(information_str) -> Information:

@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from src.utils.typed_dicts import Information
+from src.utils.typed_dicts.information import Information
 
 
 def do_put_information_into_queue(
