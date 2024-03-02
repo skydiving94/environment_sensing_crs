@@ -1,6 +1,6 @@
 from typing import Dict, TypedDict, Literal, Union, Tuple
 
-from src.enums.information_type import InformationType
+from src.utils.enums.information_type import InformationType
 
 
 # FIXME: The following code can be problematic due to wrongly used TypedDict and Enum as types.

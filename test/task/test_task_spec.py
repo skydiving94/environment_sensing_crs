@@ -3,7 +3,7 @@ import unittest
 
 from dotenv import load_dotenv
 
-from src.enums.information_type import InformationType
+from src.utils.enums.information_type import InformationType
 from src.task.task_spec import TaskSpec
 
 load_dotenv()

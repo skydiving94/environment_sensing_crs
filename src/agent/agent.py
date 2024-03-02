@@ -1,8 +1,8 @@
 from typing import List, Tuple, Callable, Any, Optional, Dict
 
 from src.agent.actions import get_all_available_action_description_pairs
-from src.typed_dicts.information import Information
-from src.typed_dicts.interaction_history import InteractionHistory
+from src.utils.typed_dicts import Information
+from src.utils.typed_dicts.interaction_history import InteractionHistory
 from src.task.task_spec import TaskSpec
 from src.utils.prompt_utils import extract_replaceable_keys
 

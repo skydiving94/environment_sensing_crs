@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from src.typed_dicts.information import Information
+from src.utils.typed_dicts import Information
 
 
 def do_formulate_response(

@@ -4,7 +4,7 @@ from typing import Dict, List
 from dotenv import load_dotenv
 
 from src.task.task_instance import TaskInstance
-from src.typed_dicts.information_spec import InformationSpec, parse_information_spec
+from src.utils.typed_dicts.information_spec import InformationSpec, parse_information_spec
 from src.utils.prompt_utils import load_prompt_template, replace_all_keys_in_prompt_template
 
 load_dotenv()
