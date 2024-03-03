@@ -12,6 +12,9 @@ class Environment:
     # Could be better with priority values.
     _information_queues: Dict[str, deque[Information]]
 
+    """
+    Fields for monitoring the information queues for outputs from an agent.
+    """
     _monitor_thread: threading.Thread
     _stop_event: threading.Event
 
@@ -33,6 +36,13 @@ class Environment:
         The monitor threads should hence be terminated.
         """
         self._stop_monitor_thread()
+
+    def __str__(self) -> str:
+        return f'''
+Environment @ {id(self)}
+Registered Agents: {list(self._agent_ids)}
+Information Queues: {list(self._information_queues.keys())}
+'''
 
     def register_agent(self, agent_id: str):
         if agent_id in self._agent_ids:
@@ -70,5 +80,6 @@ class Environment:
         self._monitor_thread.start()
 
     def _stop_monitor_thread(self):
+        print('Stopping monitor thread...')
         self._stop_event.set()
         self._monitor_thread.join()
