@@ -1,15 +1,14 @@
 import threading
 from collections import deque
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Set
 
-from src.agent.agent import Agent
 from src.typed_dicts.information import Information
+from src.utils.environment_utils import get_agent_output_information_name
 
 
 class Environment:
-    # Somewhat rudimentary. Ideally a graph or network of agents is better?
-    _agents: Dict[str, Agent]
 
+    _agent_ids: Set[str]
     # Could be better with priority values.
     _information_queues: Dict[str, deque[Information]]
 
@@ -17,18 +16,16 @@ class Environment:
     _stop_event: threading.Event
 
     def __init__(self,
-                 agents: Optional[List[Agent]] = None,
+                 agent_ids: Optional[Set[str]] = None,
                  information_names: Optional[List[str]] = None):
-        self._agents = {}
+        self._agent_ids = agent_ids if agent_ids is not None else set()
         self._information_queues = {}
-
-        if agents is not None:
-            for agent in agents:
-                self.add_agent(agent)
 
         if information_names is not None:
             for information_name in information_names:
                 self.init_information_queue(information_name)
+
+        self._start_monitor_thread()
 
     def __del__(self):
         """
@@ -37,31 +34,22 @@ class Environment:
         """
         self._stop_monitor_thread()
 
-    def init_information_queue(self, information_name):
+    def register_agent(self, agent_id: str):
+        if agent_id in self._agent_ids:
+            raise KeyError(f'{agent_id} already exists!')
+        self._agent_ids.add(agent_id)
+
+    def init_information_queue(self, information_name: str):
         """
         Initialize a new information queue.
         :param information_name: The name of the information.
         """
         self._information_queues[information_name] = deque()
 
-    def add_agent(self, agent: Agent):
-        """
-        Add a new agent to the environment.
-        :param agent: The agent to be added to the environment.
-        :return:
-        """
-        self._agents[agent.get_agent_id()] = agent
-        self.init_information_queue(self._get_agent_output_information_name(agent))
-
-    def talk_to_agent(self, agent_id: str, message: str):
-        if agent_id not in self._agents:
-            raise LookupError(f'{agent_id} is not a valid agent.')
-        else:
-            self._agents[agent_id].listen(message)
-
-    @staticmethod
-    def _get_agent_output_information_name(agent: Agent) -> str:
-        return f'agent_output_{agent.get_agent_id()}'
+    def get_information_queue_by_name(self, information_name: str) -> deque[Information]:
+        if information_name not in self._information_queues.keys():
+            self.init_information_queue(information_name)
+        return self._information_queues[information_name]
 
     def _monitor(self):
         """
@@ -69,16 +57,17 @@ class Environment:
         Print out any agent response if available.
         """
         while not self._stop_event.is_set():
-            for agent in self._agents.values():
-                information_name = self._get_agent_output_information_name(agent)
+            for agent_id in self._agent_ids:
+                information_name = get_agent_output_information_name(agent_id)
                 while len(self._information_queues[information_name]) > 0:
-                    print(self._information_queues[information_name][0])
+                    print(self._information_queues[information_name][0]['value'])
                     self._information_queues[information_name].popleft()
 
     def _start_monitor_thread(self):
+        self._stop_event = threading.Event()
+
         self._monitor_thread = threading.Thread(target=self._monitor)
         self._monitor_thread.start()
-        self._stop_event = threading.Event()
 
     def _stop_monitor_thread(self):
         self._stop_event.set()
