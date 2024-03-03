@@ -2,4 +2,4 @@ from typing import TypedDict
 
 
 class TaskSpec(TypedDict):
-    raise NotImplementedError
+    raise NotImplementedError  # type: ignore

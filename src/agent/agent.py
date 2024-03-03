@@ -70,6 +70,9 @@ class Agent:
         """
         self._register_information_source(information_source_name)
 
+    def get_agent_id(self):
+        return self._agent_id
+
     """
     Private methods representing the internal capabilities of an agent.
     """
