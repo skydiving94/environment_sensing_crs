@@ -2,12 +2,11 @@ import threading
 from collections import deque
 from typing import List, Dict, Optional, Set
 
-from src.typed_dicts.information import Information
 from src.utils.environment_utils import get_agent_output_information_name
+from src.utils.typed_dicts.information import Information
 
 
 class Environment:
-
     _agent_ids: Set[str]
     # Could be better with priority values.
     _information_queues: Dict[str, deque[Information]]

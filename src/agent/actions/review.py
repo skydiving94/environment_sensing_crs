@@ -1,14 +1,17 @@
 from typing import List
 
-from src.typed_dicts.information import Information
-from src.typed_dicts.review_result import ReviewResult
+from src.utils.typed_dicts.information import Information
+from src.utils.typed_dicts.review_result import ReviewResult
 
 
-def do_review(information_cache: List[Information]) -> ReviewResult:
+def do_review(
+        system_prompt: str,
+        task_prompt: str,
+        information_cache: List[Information]) -> ReviewResult:
     raise NotImplementedError
 
 
-def _do_review(result: dict, task_spec: dict) -> ReviewResult:
+def _do_review(system_prompt: str, task_prompt: str, result: dict, task_spec: dict) -> ReviewResult:
     """
     This action corresponds to the task of REVIEW_ACTION_RESULT from another agent.
 
