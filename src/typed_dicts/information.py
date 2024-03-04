@@ -1,5 +1,6 @@
-from typing import TypedDict
+from typing import TypedDict, Any
 
 
 class Information(TypedDict):
-    raise NotImplementedError
+    value: Any
+    pass
