@@ -17,12 +17,10 @@ def load_prompt_template(prompt_template: str) -> str:
 
 
 def replace_all_keys_in_prompt_template(prompt_template: str, key_to_val: Dict[str, str]) -> str:
-    for key in key_to_val.keys():
-        prompt_template = prompt_template.replace(f'[[{key}]]', key_to_val[key])
-    return prompt_template
+    return prompt_template.format(**key_to_val)
 
 
 def extract_replaceable_keys(prompt_template: str) -> Set[str]:
-    pattern = r"\[\[(.*?)\]\]"
+    pattern = r"\{(\w+)\}"
     matches = re.findall(pattern, prompt_template)
     return set(matches)

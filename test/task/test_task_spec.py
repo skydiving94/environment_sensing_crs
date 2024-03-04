@@ -26,7 +26,7 @@ class TestTaskSpec(unittest.TestCase):
     def _validate(self, task_spec: TaskSpec):
         self.assertEqual(task_spec.name, 'draw_more_info')
         self.assertTrue(
-            'The current objective is [[current_objective]].' in task_spec.task_prompt_template)
+            'The current objective is {current_objective}.' in task_spec.task_prompt_template)
         self.assertEqual(task_spec.system_prompt_template, '')
         self.assertEqual(len(task_spec.input_information_names), 3)
         self.assertTrue('information_queue_names' in task_spec.output_information_spec.keys())

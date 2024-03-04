@@ -1,2 +1,2 @@
 The output must follow the following format:
-[[output_format]]
+{output_format}
