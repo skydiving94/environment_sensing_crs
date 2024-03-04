@@ -61,6 +61,19 @@ Information Queues: {list(self._information_queues.keys())}
             self.init_information_queue(information_name)
         return self._information_queues[information_name]
 
+    def get_all_agent_status(self) -> Dict[str, str]:
+        """
+        Get the status of all agents.
+        :return: A dictionary of agent_id to status.
+        """
+        # TODO: Implement different status for agents,
+        #  using information from monitor_thread
+        # Note: Maybe we can also move this function, together with the logic of
+        # environment_with_one_agent to a new class called Session?
+        # A Session would hold an environment and multiple agents.
+        # That way we can avoid having circular references?
+        return {agent_id: 'OK' for agent_id in self._agent_ids}
+
     def _monitor(self):
         """
         Monitor all information queues related to agent output.

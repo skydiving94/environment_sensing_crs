@@ -18,6 +18,8 @@ def main():
     agent.register_information_queue('INFO1')
     print(str(env))
 
+    print(env.get_all_agent_status())
+
     agent.listen('Hello World!')
 
 
