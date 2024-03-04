@@ -1,10 +1,6 @@
-from typing import TypedDict
+from typing import TypedDict, Any
 
 
 class Information(TypedDict):
-    name: str
-    raise NotImplementedError  # type: ignore
-
-
-def parse_information(information_str) -> Information:
-    raise NotImplementedError
+    value: Any
+    pass
