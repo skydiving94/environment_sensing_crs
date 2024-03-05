@@ -230,6 +230,7 @@ class Agent:
     def _load_action_description_pairs(self):
         self._action_description_pairs = get_all_available_action_description_pairs()
 
+
 def _build_replacement_key_to_val(self, prompt_template: str) -> Dict[str, str]:
     """
     Given a prompt template, collect information an agent has and replace the keys with
@@ -258,6 +259,7 @@ def _build_replacement_key_to_val(self, prompt_template: str) -> Dict[str, str]:
             raise NotImplementedError
 
     return replacement_key_to_val
+
 
 def _repopulate_information_queues(self, is_incoming: bool = True):
     """
