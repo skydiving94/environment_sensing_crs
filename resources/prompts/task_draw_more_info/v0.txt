@@ -1,0 +1,13 @@
+Currently, the names of the information available is listed below.
+{information_cache}
+
+The current objective is {current_objective}.
+
+If there is no objective, then decide which information queue can provide information that
+helps decide a new objective.
+
+If there is an existing objective, then decide which information queue can provide information
+that helps to accomplish the objective.
+
+Below is a list names of all available information queues.
+{information_queue_names}
