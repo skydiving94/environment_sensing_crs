@@ -40,8 +40,11 @@ class TaskSpec:
     # The action pipeline.
     action_names: List[str]
 
+    # The temperature for when the task is executed.
+    temperature: float
+
     def __init__(self, task_spec_str: Optional[str] = None, task_spec_path: Optional[str] = None):
-        task_spec_dict = self._load_task_spec_dict(task_spec_path, task_spec_str)
+        task_spec_dict: Dict = self._load_task_spec_dict(task_spec_path, task_spec_str)
 
         output_information_spec = task_spec_dict['output_information_spec']
         self.name = task_spec_dict['name']
@@ -55,22 +58,29 @@ class TaskSpec:
             {k: parse_information_spec(v) for k, v in output_information_spec.items()}
         self.output_information_spec_str = json.dumps(output_information_spec)
         self.action_names = task_spec_dict['action_names']
+        self.temperature = task_spec_dict['temperature'] \
+            if 'temperature' in task_spec_dict \
+            else 0.5
+        self.is_terminating_task = task_spec_dict['is_terminating_task'] \
+            if 'is_terminating_task' in task_spec_dict \
+            else False
 
-    def build_task_instance(self,
-                            system_prompt_key_to_val: Dict[str, str],
-                            task_prompt_key_to_val: Dict[str, str]) -> TaskInstance:
+    def build_task_instance(
+            self,
+            prompt_key_to_val: Dict[str, str]) -> TaskInstance:
         system_prompt = replace_all_keys_in_prompt_template(self.system_prompt_template,
-                                                            system_prompt_key_to_val)
+                                                            prompt_key_to_val)
         task_prompt = \
             (replace_all_keys_in_prompt_template(self.task_prompt_template,
-                                                 task_prompt_key_to_val)
-             + replace_all_keys_in_prompt_template(PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT,
-                                                   {
-                                                       'output_format': self.output_information_spec_str}))
+                                                 prompt_key_to_val)
+             + replace_all_keys_in_prompt_template(
+                        PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT,
+                        {'output_format': self.output_information_spec_str}))
         return TaskInstance(name=self.name,
                             system_prompt=system_prompt,
                             task_prompt=task_prompt,
-                            action_names=self.action_names)
+                            temperature=self.temperature,
+                            output_information_spec=self.output_information_spec)
 
     @staticmethod
     def _load_task_spec_dict(task_spec_path, task_spec_str):

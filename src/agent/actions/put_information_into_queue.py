@@ -1,12 +1,13 @@
 from typing import Dict, List
 
-from src.utils.typed_dicts.information import Information
+from src.information_cache.information import Information
+from src.information_cache.information_cache import InformationCache
 
 
 def do_put_information_into_queue(
         system_prompt: str,
         task_prompt: str,
-        information_cache: List[Information]):
+        information_cache: InformationCache):
     raise NotImplementedError
 
 

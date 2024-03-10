@@ -1,12 +1,12 @@
 from typing import List, Dict
 
-from src.utils.typed_dicts.information import Information
+from src.information_cache.information_cache import InformationCache
 
 
 def do_formulate_response(
         system_prompt: str,
         task_prompt: str,
-        information_cache: List[Information]) -> str:
+        information_cache: InformationCache) -> str:
     raise NotImplementedError
 
 

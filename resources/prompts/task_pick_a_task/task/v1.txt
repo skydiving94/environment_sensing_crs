@@ -1,0 +1,19 @@
+Currently, the names of the information available is listed below.
+{information_cache}
+
+The latest input from the user is: {user_input}.
+
+The current objective is {current_objective}.
+
+You need to pick a task from the following list.
+
+{all_possible_tasks}
+
+If there is no objective, then the priority is to pick a task that helps set an objective.
+
+Otherwise, the priority is to pick a task that can achieve this objective given
+the current information.
+
+Example outputs:
+{{"task_name": "Task_A", "reasoning": "Given the information xxxx, Task_A makes most sense because... On the other hand, the other task TASK_B, ... TASK_C ... TASK_D ..."}}
+{{"task_name": "Task_B", "reasoning": "Task_B makes sense because ... On the other hand, the other tasks ..."}}
