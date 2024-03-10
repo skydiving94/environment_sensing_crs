@@ -9,5 +9,5 @@ helps decide a new objective.
 If there is an existing objective, then decide which information queue can provide information
 that helps to accomplish the objective.
 
-Below is a list names of all available information queues.
+Below is a list names of all available information sources.
 {information_queue_names}

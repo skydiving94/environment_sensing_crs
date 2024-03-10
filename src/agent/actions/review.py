@@ -1,13 +1,13 @@
 from typing import List
 
-from src.utils.typed_dicts.information import Information
+from src.information_cache.information_cache import InformationCache
 from src.utils.typed_dicts.review_result import ReviewResult
 
 
 def do_review(
         system_prompt: str,
         task_prompt: str,
-        information_cache: List[Information]) -> ReviewResult:
+        information_cache: InformationCache) -> ReviewResult:
     raise NotImplementedError
 
 

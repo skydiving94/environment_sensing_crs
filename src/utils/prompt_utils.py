@@ -1,6 +1,5 @@
 import os
-import re
-from typing import Dict, Set
+from typing import Dict
 
 from dotenv import load_dotenv
 
@@ -18,9 +17,3 @@ def load_prompt_template(prompt_template: str) -> str:
 
 def replace_all_keys_in_prompt_template(prompt_template: str, key_to_val: Dict[str, str]) -> str:
     return prompt_template.format(**key_to_val)
-
-
-def extract_replaceable_keys(prompt_template: str) -> Set[str]:
-    pattern = r"\{(\w+)\}"
-    matches = re.findall(pattern, prompt_template)
-    return set(matches)
