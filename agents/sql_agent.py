@@ -11,7 +11,7 @@ load_dotenv() # .env is not in the the same directory, why is it working?
 if not os.getenv("OPENAI_API_KEY"):
     raise ValueError("You must set your OPENAI_API_KEY in Environment Variables")
 
-print(os.getenv("OPENAI_API_KEY"))
+# print(os.getenv("OPENAI_API_KEY"))
 
 
 """
