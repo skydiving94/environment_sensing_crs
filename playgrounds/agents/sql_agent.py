@@ -33,26 +33,32 @@ llm = ChatOpenAI(openai_api_key=os.getenv("OPENAI_API_KEY"), model="gpt-3.5-turb
 
 system_template = """
 You are an expert in SQL programming. You are asked to write a SQL query according to user request.
-Format your response as a SQL query on sqlite database. Output only SQL query.
+Format your response as a SQL query on sqlite database. Output only the SQL query, no extra characters.
 
 List of available tables:
     - movies: movieId, title, genres
-    
-"What is genres is the movie 'Toy Story (1995)'?"
+    - genome_scores: movieId, tagId, relevance
+    - genome_tags: tagId, tag
+    - links: movieId, imdbId, tmdbId
+    - ratings: userId, movieId, rating, timestamp
+    - tags: userId, movieId, tag, timestamp
 """
-human_template = "What is genres is the movie 'Toy Story (1995)'?"
+# human_template = "What genres is the movie 'Toy Story (1995)'?"
+human_template = "What is the highest rating movie in Comedy genres?"
 
 chat_prompt = ChatPromptTemplate.from_messages([
     ("system", system_template),
     ("human", human_template),
 ])
 
-resp = llm.invoke(system_template, temperature=0.0, max_tokens=120, top_p=1.0, timeout=10)
+message = chat_prompt.format_messages()
+
+resp = llm.invoke(message, temperature=0.0, max_tokens=120, top_p=1.0, timeout=10)
 print("LLM response: ", resp.content)
 
 conn = sqlite3.connect('/Users/zhejianpeng/project/environment_sensing_crs/dataset/movielens.db')
 
-print("Use LLM response directly to query database", pd.read_sql_query(resp.content, conn))
+print("Use LLM response directly to query database\n", pd.read_sql_query(resp.content, conn))
 
 # # Check each table's row count
 # conn = sqlite3.connect('/Users/zhejianpeng/project/environment_sensing_crs/dataset/movielens.db')
