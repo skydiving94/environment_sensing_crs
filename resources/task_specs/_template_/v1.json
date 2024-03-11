@@ -1,0 +1,11 @@
+{
+  "name": "",
+  "description": "",
+  "system_prompt_template": "",
+  "task_prompt_template": "",
+  "input_information_names": [],
+  "output_information_spec": {},
+  "action_names": [],
+  "temperature": 0,
+  "next_task": ""
+}

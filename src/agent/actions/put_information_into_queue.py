@@ -7,7 +7,7 @@ from src.information_cache.information_cache import InformationCache
 def do_put_information_into_queue(
         system_prompt: str,
         task_prompt: str,
-        information_cache: InformationCache):
+        information_cache: InformationCache) -> Dict:
     raise NotImplementedError
 
 

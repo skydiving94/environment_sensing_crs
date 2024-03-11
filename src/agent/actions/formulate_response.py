@@ -6,7 +6,7 @@ from src.information_cache.information_cache import InformationCache
 def do_formulate_response(
         system_prompt: str,
         task_prompt: str,
-        information_cache: InformationCache) -> str:
+        information_cache: InformationCache) -> Dict:
     raise NotImplementedError
 
 

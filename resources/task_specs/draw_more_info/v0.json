@@ -5,11 +5,11 @@
   "task_prompt_template": "PROMPT_TEMPLATE_FOR_DRAW_MORE_INFO_PATH",
   "input_information_names": [],
   "output_information_spec": {
-    "information_queue_names": {
-      "information_type": "array",
-      "item_type": "string"
+    "information_queue_name": {
+      "information_type": "string"
     }
   },
   "action_names": [],
-  "temperature": 0.2
+  "temperature": 0.2,
+  "next_task_name": "execute_sql_query"
 }

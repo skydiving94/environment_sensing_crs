@@ -32,8 +32,8 @@ def get_all_available_task_name_description_pairs() -> List[Tuple[str, str]]:
             'sufficient to make a decision on.'
         ),
         (
-            'pick_a_task',
-            'The agent should decide which task it should execute given existing information.'
+            'decide_objective',
+            'The agent should decide the objective based on the given information.'
         ),
     ]
 

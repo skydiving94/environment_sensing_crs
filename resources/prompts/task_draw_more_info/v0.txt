@@ -11,3 +11,8 @@ that helps to accomplish the objective.
 
 Below is a list names of all available information sources.
 {information_queue_names}
+
+Example outputs:
+{{"information_queue_name": "infoX"}}
+{{"information_queue_name": "Foo"}}
+{{"information_queue_name": "Bar"}}

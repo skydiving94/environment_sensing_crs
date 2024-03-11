@@ -2,6 +2,8 @@ import json
 from typing import Dict
 
 from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+from langchain_core.prompts import ChatPromptTemplate
 
 from src.information_cache.information import Information
 from src.utils.typed_dicts.information_spec import InformationSpec
@@ -35,9 +37,12 @@ class TaskInstance:
         self.temperature = temperature
         self.output_information_spec = output_information_spec
 
-    def trigger(self, llm_instance: BaseChatModel) -> Dict[str, Information]:
+    def run(self, llm_instance: BaseChatModel) -> Dict[str, Information]:
+        system_message = SystemMessage(content=self.system_prompt)
+        ai_message = AIMessage(content=self.task_prompt)
+        message = [system_message, ai_message]
         response = llm_instance.invoke(
-            self.task_prompt,
+            message,
             temperature=0.0,
             max_tokens=120,
             top_p=1.0,

@@ -1,0 +1,11 @@
+Currently, the names of the information available is listed below.
+{information_cache}
+
+The latest input from the user is: {user_input}.
+
+The current objective is {current_objective}.
+
+You need to pick a task from the following list.
+
+{all_possible_tasks}
+

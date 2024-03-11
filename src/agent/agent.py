@@ -22,12 +22,12 @@ load_dotenv()
 """
 Keys of special, reserved information names. 
 """
+USER_INPUT_INFO_QUEUE_NAME = 'user_input'
+
 AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE = 'current_objective'
 AGENT_SPECIFIC_INFO_INFORMATION_QUEUE_NAMES = 'information_queue_names'
 AGENT_SPECIFIC_INFO_CACHE = 'information_cache'
-USER_INPUT_INFO_QUEUE_NAME = 'user_input'
 ALL_POSSIBLE_TASKS = 'all_possible_tasks'
-
 SPECIAL_INFORMATION_NAME_KEYS = [
     AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE,
     AGENT_SPECIFIC_INFO_INFORMATION_QUEUE_NAMES,
@@ -299,9 +299,11 @@ class Agent:
         task_instance = task_spec.build_task_instance(prompt_key_to_val)
 
         # Step 5. Trigger the task instance by invoking the llm instance.
-        informations = task_instance.trigger(self._llm_instance)
+        informations = task_instance.run(self._llm_instance)
+
+        print('Saving the following information to cache...')
         for information_name, information in informations.items():
-            print(f'Saving the following information to cache...\n{information}')
+            print(information)
             self._information_cache.add_information(information)
 
         # Step 6. Check if this task is a terminating task. i.e. no more processing is needed.

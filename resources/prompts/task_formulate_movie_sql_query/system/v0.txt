@@ -1,0 +1,8 @@
+Given existing information provided by the user stored in the information cache, please construct
+a sql query to query movies from the database.
+
+Current existing request provided by the users are:
+{movie_requirements}
+
+Example outputs:
+{"sql_query_str": "SELECT * FROM xxx WHERE REGION = 'Asian"}
