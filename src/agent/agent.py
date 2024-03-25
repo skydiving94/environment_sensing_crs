@@ -84,7 +84,7 @@ class Agent:
                  in_information_queue_names: Optional[List[str]] = None,
                  out_information_queue_names: Optional[List[str]] = None,
                  llm_provider: str = 'openai',
-                 current_objective: Optional[List[str]] = None,):
+                 current_objective: Optional[str] = None):
         """
         An agent can perform a variety of tasks.
         To begin with, it can interact with a user by listening to their input and talking back to
@@ -103,7 +103,11 @@ class Agent:
         #  priority.
         self._in_information_queues = dict()
         self._out_information_queues = dict()
-        self._current_objective = [current_objective] # TODO: Add a current_objective
+
+        if current_objective is not None:
+            self._current_objective = [current_objective]
+        else:
+            self._current_objective = []
 
         self.register_environment(environment)
         if in_information_queue_names is not None:
@@ -149,7 +153,6 @@ class Agent:
             user_input_queue.append(Information(input_message, name=USER_INPUT_INFO_QUEUE_NAME))
             print("Current", user_input_queue)
             print(self._in_information_queues[USER_INPUT_INFO_QUEUE_NAME])
-        
 
     def see(self, environment_image_path: str):
         """
@@ -239,7 +242,7 @@ class Agent:
         # Step 1. Given the latest information passed to process and existing information
         # in the information cache, it first picks a task.
         task_spec_for_picked_task = self._pick_a_task()
-        
+
         print("task_spec_for_picked_task returns", task_spec_for_picked_task)
 
         if task_spec_for_picked_task is None:
@@ -252,6 +255,7 @@ class Agent:
 
         # Step 3. Check if more processing is needed.
         if self._is_process_finished:
+            self._clear_objective()
             self._resume_monitor_thread()
             return
         else:
@@ -297,24 +301,28 @@ class Agent:
         action_output = self._execute_actions(action_names, arg_key_to_arg_val)
 
         # Step 3. Build prompt_key_to_val based on current information stored.
+        informations = {}
         prompt_key_to_val = self._build_prompt_key_to_val()
         if action_output is not None and len(action_names) > 0:
             prompt_key_to_val['action_output'] = str(action_output)
+            informations = action_output
 
         # Step 4. Get an instance of the task given the contextual information the agent
         # current has, including the result of the action taken.
-        task_instance = task_spec.build_task_instance(prompt_key_to_val)
+        if task_spec.is_llm_task:
+            task_instance = task_spec.build_task_instance(prompt_key_to_val)
 
-        # Step 5. Trigger the task instance by invoking the llm instance.
-        informations = task_instance.trigger(self._llm_instance)
+            # Step 4.1. Trigger the task instance by invoking the llm instance.
+            informations.update(task_instance.trigger(self._llm_instance))
+
+        # Step 5. Add all informations from action execution and llm task to the info cache.
         for information_name, information in informations.items():
             print(f'Saving the following information to cache...\n{information}')
             self._information_cache.add_information(information)
 
         # Step 6. If there is next_task, execute the next task.
         if task_spec.next_task is not None:
-            next_task_spec = TaskSpec(task_spec_path=get_task_spec_path_by_name(task_spec.next_task))
-            self._execute_a_task(next_task_spec)
+            self._execute_a_task(task_spec.next_task)
 
         # Step 6. Check if this task is a terminating task. i.e. no more processing is needed.
         self._is_process_finished = task_spec.is_terminating_task
@@ -386,9 +394,12 @@ class Agent:
     def _clear_objective(self):
         self._current_objective = []
         self._task_history = []
+
+        # TODO: In the future, consider saving the short-term info cache
+        #  to a long-term info storage.
         self._information_cache = InformationCache()
 
-        # Also, reset the priorities for all information sources to default value.
+        # TODO: Also, reset the priorities for all information sources to default value.
 
     # A placeholder for a future action which allows an agent to define and name its own action
     #   and have the action stored in the proper path of the file system. After the definition,
@@ -411,20 +422,22 @@ class Agent:
             ALL_POSSIBLE_TASKS: get_stringified_all_available_task_name_description_pairs()
         }
 
-    def _build_arg_key_to_arg_val(self, input_information_names: List[str]) -> Dict:
+    def _build_arg_key_to_arg_val(self, input_information_names: List[str]) -> Dict[str, Any]:
         """
         Build arg_key2arg_val based on input information names and the available
         data the agent has.
         """
         # TODO: Replace the following placeholder return.
-        # special_information_key_to_val = self._get_special_information_key_to_val()
-        arg_key_to_arg_val = {}
+        special_information_key_to_val = self._get_special_information_key_to_val()
+        arg_key_to_arg_val: Dict[str, Any] = {}
         for information_name in input_information_names:
-            # if information_name in SPECIAL_INFORMATION_NAME_KEYS:
-            #     arg_key_to_arg_val[information_name] = special_information_key_to_val[information_name]
-            # if not special, it should be in information_cache
-            if information_name in self._information_cache.get_information_names():
-                arg_key_to_arg_val[information_name] = self._information_cache.get_top_information_by_name(information_name)
+            if information_name in SPECIAL_INFORMATION_NAME_KEYS:
+                arg_key_to_arg_val[information_name] = (
+                    special_information_key_to_val)[information_name]
+
+            elif information_name in self._information_cache.get_information_names():
+                information = self._information_cache.get_top_information_by_name(information_name)
+                arg_key_to_arg_val[information_name] = information.value
         return arg_key_to_arg_val
 
     def _build_prompt_key_to_val(self) -> Dict[str, str]:

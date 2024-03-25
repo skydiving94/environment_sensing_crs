@@ -50,13 +50,11 @@ class InformationCache:
             print("Accessing non-exist information: ", information_name)
             return []
 
-    def get_top_information_by_name(self, information_name: str) -> Optional[Information]:
+    def get_top_information_by_name(self, information_name: str) -> Information:
         """
         It gets the information for the given name with the highest priority.
         """
         information_list = self.get_information_by_name(information_name)
-        if len(information_list) == 0:
-            return None
         return information_list[-1]
 
     def get_informations(self) -> Dict[str, List[Information]]:

@@ -13,6 +13,6 @@
         }
     },
     "action_names": ["do_query_sql_database"],
-    "next_task": "query_sql"
+    "is_llm_task": false
 }
   

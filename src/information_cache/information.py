@@ -37,7 +37,7 @@ class Information:
         self._name = name
         self._information_type = information_type
         self._is_value_parsed = True
-        self._value = self._parse__raw_value_by__information_type(
+        self._value = self._parse_raw_value_by_information_type(
             raw_value,
             information_type,
             information_spec)
@@ -78,7 +78,7 @@ class Information:
     def __str__(self):
         return f'Information Name: {self._name}; Information Value: {self._value}'
 
-    def _parse__raw_value_by__information_type(
+    def _parse_raw_value_by_information_type(
             self,
             _raw_value: Any,
             _information_type: InformationType,
