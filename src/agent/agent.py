@@ -1,5 +1,6 @@
 import os
 import threading
+import time
 from collections import deque
 from typing import List, Tuple, Callable, Any, Optional, Dict
 
@@ -220,6 +221,7 @@ class Agent:
 
                     # Pass the new information to process.
                     self._process(information)
+                time.sleep(0.05)
 
     def _process(self, information: Information, depth: int = 0):
         """
@@ -305,7 +307,9 @@ class Agent:
         prompt_key_to_val = self._build_prompt_key_to_val()
         if action_output is not None and len(action_names) > 0:
             prompt_key_to_val['action_output'] = str(action_output)
-            informations = action_output
+            # Build information from action output.
+            for key, val in action_output.items():
+                informations[key] = Information(raw_value=val, name=key)
 
         # Step 4. Get an instance of the task given the contextual information the agent
         # current has, including the result of the action taken.
@@ -322,10 +326,17 @@ class Agent:
 
         # Step 6. If there is next_task, execute the next task.
         if task_spec.next_task is not None:
-            self._execute_a_task(task_spec.next_task)
+            # Record all task_output in recurrent tasks and return in informations in main task.
+            task_output: Dict = self._execute_a_task(task_spec.next_task)
+            informations.update(task_output)
+            
 
-        # Step 6. Check if this task is a terminating task. i.e. no more processing is needed.
-        self._is_process_finished = task_spec.is_terminating_task
+        # Step 7. Check if this task is a terminating task. i.e. no more processing is needed.
+        if task_spec.next_task is None or task_spec.is_terminating_task:
+            # When is_terminating_task=True is completed, all call_stack will have _is_process_finished=True recorded.
+            # If no next_task specified, the process is also finished.
+            self._is_process_finished = True
+        print(f'Is process {threading.current_thread().ident} | task_name {task_spec.name} finished? {self._is_process_finished}')
 
         return informations
 

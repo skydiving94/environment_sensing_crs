@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from src.task.task_instance import TaskInstance
 from src.utils.prompt_utils import load_prompt_template, replace_all_keys_in_prompt_template
 from src.utils.typed_dicts.information_spec import InformationSpec, parse_information_spec
+from src.task import get_all_task_spec_paths
 
 load_dotenv()
 
@@ -70,8 +71,14 @@ class TaskSpec:
         self.is_terminating_task = task_spec_dict['is_terminating_task'] \
             if 'is_terminating_task' in task_spec_dict \
             else False
-        self.is_llm_task = task_spec_dict['is_llm_task']
-        self.next_task = TaskSpec(task_spec_str=task_spec_dict['next_task'])
+        self.is_llm_task = task_spec_dict.get('is_llm_task', True)
+
+        if 'next_task' in task_spec_dict and task_spec_dict['next_task'] != '':
+            next_task_name = task_spec_dict['next_task']
+            next_task_path = get_all_task_spec_paths()[next_task_name]
+            self.next_task = TaskSpec(task_spec_path=next_task_path)
+        else:
+            self.next_task = None
 
     def build_task_instance(
             self,
@@ -106,3 +113,4 @@ class TaskSpec:
         else:
             raise ValueError
         return task_spec_dict
+

@@ -1,4 +1,6 @@
 from typing import Callable, Any, Tuple, Optional, Dict
+import sys
+sys.path.append('/Users/zhejianpeng/project/environment_sensing_crs/src/agent/actions')
 from query_sql_database import do_query_sql_database
 
 def get_all_available_action_data() -> Dict[str, Tuple[Optional[str], Callable[..., Any]]]:
