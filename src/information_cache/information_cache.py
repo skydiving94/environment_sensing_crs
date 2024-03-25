@@ -1,4 +1,4 @@
-from typing import Set, Dict, List
+from typing import Set, Dict, List, Optional
 
 from src.information_cache.information import Information
 from src.information_cache.information_relation import InformationRelation
@@ -44,13 +44,20 @@ class InformationCache:
         return list(self._informations.keys())
 
     def get_information_by_name(self, information_name: str) -> List[Information]:
-        return self._informations[information_name]
+        if information_name in self._informations:
+            return self._informations[information_name]
+        else:
+            print("Accessing non-exist information: ", information_name)
+            return []
 
-    def get_top_information_by_name(self, information_name: str) -> List[Information]:
+    def get_top_information_by_name(self, information_name: str) -> Optional[Information]:
         """
         It gets the information for the given name with the highest priority.
         """
-        raise NotImplementedError
+        information_list = self.get_information_by_name(information_name)
+        if len(information_list) == 0:
+            return None
+        return information_list[-1]
 
     def get_informations(self) -> Dict[str, List[Information]]:
         return self._informations

@@ -72,7 +72,8 @@ class TaskSpec:
                                                             prompt_key_to_val)
         task_prompt = \
             (replace_all_keys_in_prompt_template(self.task_prompt_template,
-                                                 prompt_key_to_val)
+                                                 prompt_key_to_val) 
+             + "\n" # make sure there is a newline between the task prompt and the output prompt
              + replace_all_keys_in_prompt_template(
                         PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT,
                         {'output_format': self.output_information_spec_str}))
