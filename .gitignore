@@ -160,6 +160,7 @@ cython_debug/
 .idea/
 
 # Dataset
+dataset/**
 ./dataset/GoRecDial/
 !./dataset/*.py
 !./dataset/*.ipynb
