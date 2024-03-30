@@ -27,8 +27,6 @@ def _do_query_sql_database(sql_query: str) -> str:
     :param sql_query: A list of results collected.
     :return: A string as the response.
     """
-    # Debug only: REMOVE THIS LINE
-    return  "{\"title\":{\"0\":\"Santosh Subramaniam (2008)\"},\"avg_rating\":{\"0\":5.0}}"
     conn = sqlite3.connect('/Users/zhejianpeng/project/environment_sensing_crs/dataset/movielens.db')
     query_result = pd.read_sql_query(sql_query, conn)
     print(query_result['title'])
@@ -36,7 +34,7 @@ def _do_query_sql_database(sql_query: str) -> str:
 
 
 if __name__ == "__main__":
-    # print(_do_query_sql_database("SELECT * FROM movies LIMIT 5"))
-    # print(_do_query_sql_database("SELECT * FROM ratings LIMIT 5"))
-    # print(_do_query_sql_database("SELECT * FROM tags LIMIT 5"))
+    print(_do_query_sql_database("SELECT * FROM movies LIMIT 5"))
+    print(_do_query_sql_database("SELECT * FROM ratings LIMIT 5"))
+    print(_do_query_sql_database("SELECT * FROM tags LIMIT 5"))
     print(_do_query_sql_database("SELECT title, MAX(rating) AS best_rating FROM movies JOIN ratings ON movies.movieId = ratings.movieId WHERE strftime('%Y', datetime(ratings.timestamp, 'unixepoch')) = '2009' GROUP BY title ORDER BY best_rating DESC LIMIT 1"))

@@ -332,10 +332,7 @@ class Agent:
             
 
         # Step 7. Check if this task is a terminating task. i.e. no more processing is needed.
-        if task_spec.next_task is None or task_spec.is_terminating_task:
-            # When is_terminating_task=True is completed, all call_stack will have _is_process_finished=True recorded.
-            # If no next_task specified, the process is also finished.
-            self._is_process_finished = True
+        self._is_process_finished = task_spec.is_terminating_task or self._is_process_finished
         print(f'Is process {threading.current_thread().ident} | task_name {task_spec.name} finished? {self._is_process_finished}')
 
         return informations

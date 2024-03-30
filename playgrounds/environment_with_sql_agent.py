@@ -27,8 +27,6 @@ def main():
     print(env.get_all_agent_status())
 
     sql_agent.listen('Find the best average rating movie.')
-    # agent.listen('Hello World!')
-
 
 if __name__ == '__main__':
     main()
