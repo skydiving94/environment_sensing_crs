@@ -442,7 +442,6 @@ class Agent:
             if information_name in SPECIAL_INFORMATION_NAME_KEYS:
                 arg_key_to_arg_val[information_name] = (
                     special_information_key_to_val)[information_name]
-
             elif information_name in self._information_cache.get_information_names():
                 information = self._information_cache.get_top_information_by_name(information_name)
                 arg_key_to_arg_val[information_name] = information.value

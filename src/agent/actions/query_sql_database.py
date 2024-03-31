@@ -1,5 +1,6 @@
 # Query SQL Database action
 import json
+import os
 import sqlite3
 from copy import deepcopy
 from typing import Dict
@@ -27,7 +28,9 @@ def _do_query_sql_database(sql_query: str) -> str:
     :param sql_query: A list of results collected.
     :return: A string as the response.
     """
-    conn = sqlite3.connect('/Users/zhejianpeng/project/environment_sensing_crs/dataset/movielens.db')
+    db_path = os.getenv('MOVIELENS_DB_PATH', default='/Users/zhejianpeng/project/environment_sensing_crs/dataset/movielens.db')
+    print("Read db from:", db_path)
+    conn = sqlite3.connect(db_path)
     query_result = pd.read_sql_query(sql_query, conn)
     print(query_result['title'])
     return json.dumps(query_result.to_json())
