@@ -16,7 +16,9 @@ List of available tables:
 Use strftime('%Y', datetime(r.timestamp, 'unixepoch')) to convert timestamp to year.
 
 Example outputs:
-{{"sql_query": "SELECT * FROM db;", reasoning": "according to user input ..., this query is ..."}}
-{{"sql_query": "SELECT * FROM db WHERE col1='true' GROUP BY col2;", "reasoning": "We want to find ... according to ... mentioned in user_input"}}
+
+{{"sql_query": "SELECT * FROM db;", "reasoning": "According to user input xxx, the query 'qqq' makes most sense."}}
+
+{{"sql_query": "SELECT * FROM db WHERE col1='true' GROUP BY col2;", "reasoning": "We want to find ... according to ... mentioned in user_input and group the result by col2"}}
 
 The returned json string must be parsable by json.loads().

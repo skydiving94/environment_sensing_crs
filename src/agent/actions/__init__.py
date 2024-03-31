@@ -1,5 +1,8 @@
 from typing import Callable, Any, Tuple, Optional, Dict
-from .query_sql_database import do_query_sql_database
+
+from src.agent.actions.collect_information_by_names import do_collect_information_by_names
+from src.agent.actions.query_sql_database import do_query_sql_database
+
 
 def get_all_available_action_data() -> Dict[str, Tuple[Optional[str], Callable[..., Any]]]:
     """
@@ -11,5 +14,7 @@ def get_all_available_action_data() -> Dict[str, Tuple[Optional[str], Callable[.
 
     # FIXME: Implement this function! Load all actions from actions directory.
     return {
-        'do_query_sql_database': ('execute a SQL query', do_query_sql_database)
+        'do_query_sql_database': ('execute a SQL query', do_query_sql_database),
+        'do_collect_information_by_names':
+            ('Collect all information by information names', do_collect_information_by_names)
     }

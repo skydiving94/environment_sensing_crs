@@ -36,6 +36,7 @@ class Information:
         self._raw_value = str(raw_value)
         self._name = name
         self._information_type = information_type
+        self._information_spec = information_spec
         self._is_value_parsed = True
         self._value = self._parse_raw_value_by_information_type(
             raw_value,

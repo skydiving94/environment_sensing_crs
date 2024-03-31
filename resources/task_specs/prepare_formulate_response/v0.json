@@ -1,0 +1,18 @@
+{
+  "name": "prepare_formulate_response",
+  "description": "Utilizing all available information in the information cache, decide the names of relevant information for formulating a response.",
+  "system_prompt_template": "",
+  "task_prompt_template": "TASK_PROMPT_TEMPLATE_FOR_DECIDE_INFO_FOR_PREPARE_FORMULATE_RESPONSE",
+  "output_information_spec": {
+    "information_names_for_response_generation": {
+      "information_type": "array"
+    },
+    "reasoning": {
+      "information_type": "string"
+    }
+  },
+  "is_llm_task": true,
+  "is_terminating_task": false,
+  "temperature": 0.1,
+  "next_task": "formulate_response"
+}

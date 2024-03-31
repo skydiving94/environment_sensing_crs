@@ -3,10 +3,10 @@ from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
 
+from src.task import get_all_task_spec_paths
 from src.task.task_instance import TaskInstance
 from src.utils.prompt_utils import load_prompt_template, replace_all_keys_in_prompt_template
 from src.utils.typed_dicts.information_spec import InformationSpec, parse_information_spec
-from src.task import get_all_task_spec_paths
 
 load_dotenv()
 
@@ -60,11 +60,15 @@ class TaskSpec:
         self.system_prompt_template = load_prompt_template(task_spec_dict['system_prompt_template'])
         self.task_prompt_template = load_prompt_template(task_spec_dict['task_prompt_template'])
 
-        self.input_information_names = task_spec_dict['input_information_names']
+        self.input_information_names = (
+            task_spec_dict['input_information_names']
+            if 'input_information_names' in task_spec_dict
+            else [])
         self.output_information_spec = \
             {k: parse_information_spec(v) for k, v in output_information_spec.items()}
         self.output_information_spec_str = json.dumps(output_information_spec)
-        self.action_names = task_spec_dict['action_names']
+        self.action_names = (
+            task_spec_dict['action_names'] if 'action_names' in task_spec_dict else [])
         self.temperature = task_spec_dict['temperature'] \
             if 'temperature' in task_spec_dict \
             else 0.5
@@ -113,4 +117,3 @@ class TaskSpec:
         else:
             raise ValueError
         return task_spec_dict
-

@@ -3,7 +3,7 @@
     "description": "This task execute SQL. Not a LLM task",
     "system_prompt_template": "",
     "task_prompt_template": "",
-    "input_information_names": ["sql_query"],
+    "input_information_names": ["sql_query", "current_objective"],
     "output_information_spec": {
         "task_name": {
           "information_type": "string"
@@ -14,6 +14,6 @@
     },
     "action_names": ["do_query_sql_database"],
     "is_llm_task": false,
-    "is_terminating_task": true
+    "is_terminating_task": false
 }
   

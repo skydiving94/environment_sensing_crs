@@ -1,3 +1,4 @@
+import json
 from typing import Set, Dict, List, Optional
 
 from src.information_cache.information import Information
@@ -38,7 +39,7 @@ class InformationCache:
         self._neighbors[information_relation].add(information_cache)
 
     def get_information_names_str(self) -> str:
-        return ' '.join(self.get_information_names())
+        return json.dumps(self.get_information_names())
 
     def get_information_names(self) -> List[str]:
         return list(self._informations.keys())

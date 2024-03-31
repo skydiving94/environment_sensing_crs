@@ -1,0 +1,15 @@
+Now that it is time to formulate a response which is to be returned to the user,
+the aim of this task is to utilize all collected information to generate a text
+that best accomplish the objective.
+
+Currently, the names of the information available is listed below.
+{information_cache_keys}
+
+The current objective is {current_objective}.
+
+Decide which pieces of information are useful for formulating the response,
+and return an array of information names in the list above.
+The returned output must be parsable into a dict using json.loads() from Python.
+
+Example outputs:
+{{"information_names": ["weather_condition"], "reasoning": "As the objective is to find the weather for New York, weather_condition seems to contain relevant information for this objective"}}

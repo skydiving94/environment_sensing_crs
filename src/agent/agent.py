@@ -1,3 +1,4 @@
+import json
 import os
 import threading
 import time
@@ -25,15 +26,17 @@ Keys of special, reserved information names.
 """
 AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE = 'current_objective'
 AGENT_SPECIFIC_INFO_INFORMATION_QUEUE_NAMES = 'information_queue_names'
-AGENT_SPECIFIC_INFO_CACHE = 'information_cache'
+AGENT_SPECIFIC_INFO_CACHE_KEYS = 'information_cache_keys'
 USER_INPUT_INFO_QUEUE_NAME = 'user_input'
 ALL_POSSIBLE_TASKS = 'all_possible_tasks'
+EXECUTED_TASKS = 'executed_tasks'
 
 SPECIAL_INFORMATION_NAME_KEYS = [
     AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE,
     AGENT_SPECIFIC_INFO_INFORMATION_QUEUE_NAMES,
-    AGENT_SPECIFIC_INFO_CACHE,
+    AGENT_SPECIFIC_INFO_CACHE_KEYS,
     ALL_POSSIBLE_TASKS,
+    EXECUTED_TASKS
 ]
 MAX_DEPTH = 3
 
@@ -109,6 +112,7 @@ class Agent:
             self._current_objective = [current_objective]
         else:
             self._current_objective = []
+        self._task_history = []
 
         self.register_environment(environment)
         if in_information_queue_names is not None:
@@ -319,22 +323,23 @@ class Agent:
             # Step 4.1. Trigger the task instance by invoking the llm instance.
             informations.update(task_instance.trigger(self._llm_instance))
 
-        # Step 5. Add all informations from action execution and llm task to the info cache.
+        # Step 5. Add all information from action execution and llm task to the info cache.
         for information_name, information in informations.items():
             print(f'Saving the following information to cache...\n{information}')
             self._information_cache.add_information(information)
 
         # Step 6. If there is next_task, execute the next task.
         if task_spec.next_task is not None:
-            # Record all task_output in recurrent tasks and return in informations in main task.
+            # Record all task_output in recurrent tasks and return in information in main task.
             task_output: Dict = self._execute_a_task(task_spec.next_task)
             informations.update(task_output)
-            
 
         # Step 7. Check if this task is a terminating task. i.e. no more processing is needed.
         self._is_process_finished = task_spec.is_terminating_task or self._is_process_finished
-        print(f'Is process {threading.current_thread().ident} | task_name {task_spec.name} finished? {self._is_process_finished}')
+        print(f'Is process {threading.current_thread().ident} | '
+              f'task_name {task_spec.name} finished? {self._is_process_finished}')
 
+        self._task_history.append(task_spec.name)
         return informations
 
     @staticmethod
@@ -424,10 +429,11 @@ class Agent:
         return {
             AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE:
                 self._current_objective[0] if len(self._current_objective) > 0 else 'None',
-            AGENT_SPECIFIC_INFO_CACHE: self._information_cache.get_information_names_str(),
+            AGENT_SPECIFIC_INFO_CACHE_KEYS: self._information_cache.get_information_names_str(),
             AGENT_SPECIFIC_INFO_INFORMATION_QUEUE_NAMES:
                 str(list(self._in_information_queues.keys())),
-            ALL_POSSIBLE_TASKS: get_stringified_all_available_task_name_description_pairs()
+            ALL_POSSIBLE_TASKS: get_stringified_all_available_task_name_description_pairs(),
+            EXECUTED_TASKS: json.dumps(self._task_history)
         }
 
     def _build_arg_key_to_arg_val(self, input_information_names: List[str]) -> Dict[str, Any]:
@@ -445,6 +451,7 @@ class Agent:
             elif information_name in self._information_cache.get_information_names():
                 information = self._information_cache.get_top_information_by_name(information_name)
                 arg_key_to_arg_val[information_name] = information.value
+        arg_key_to_arg_val['information_cache'] = self._information_cache
         return arg_key_to_arg_val
 
     def _build_prompt_key_to_val(self) -> Dict[str, str]:

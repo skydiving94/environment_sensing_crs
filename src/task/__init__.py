@@ -1,6 +1,7 @@
 import os
 from typing import Tuple, List, Dict
 
+
 def get_task_spec_path_by_name(task_spec_name: str) -> str:
     return get_all_task_spec_paths()[task_spec_name]
 
@@ -12,10 +13,13 @@ def get_all_task_spec_paths() -> Dict[str, str]:
     """
     # Read task specs from .env
     task_spec_paths = {
-        'draw_more_info': os.getenv('TASK_SPEC_FOR_DRAW_MORE_INFO_PATH', default="./resources/task_specs/draw_more_info/v0.json"),
-        'pick_a_task': os.getenv('TASK_SPEC_FOR_PICK_A_TASK', default='resources/task_specs/pick_a_task/v1.json'),
-        'generate_sql': os.getenv('TASK_SPEC_FOR_GENERATE_SQL', default='/Users/zhejianpeng/project/environment_sensing_crs/resources/task_specs/generate_sql/v0.json'),
-        'query_sql': os.getenv('TASK_SPEC_FOR_QUERY_SQL', default='/Users/zhejianpeng/project/environment_sensing_crs/resources/task_specs/query_sql/v0.json')
+        'draw_more_info': os.getenv('TASK_SPEC_FOR_DRAW_MORE_INFO_PATH', default=''),
+        'pick_a_task': os.getenv('TASK_SPEC_FOR_PICK_A_TASK', default=''),
+        'generate_sql': os.getenv('TASK_SPEC_FOR_GENERATE_SQL', default=''),
+        'query_sql': os.getenv('TASK_SPEC_FOR_QUERY_SQL', default=''),
+        'formulate_response': os.getenv('TASK_SPEC_FOR_FORMULATE_RESPONSE', default=''),
+        'prepare_formulate_response':
+            os.getenv('TASK_SPEC_FOR_DECIDE_INFO_FOR_PREPARE_FORMULATE_RESPONSE', default=''),
     }
     return task_spec_paths
 
@@ -39,11 +43,23 @@ def get_all_available_task_name_description_pairs() -> List[Tuple[str, str]]:
         ),
         (
             'generate_sql',
-            "The agent should understand user's request and generate SQL query to fetch the required data."
+            'The agent should understand user\'s request and '
+            'generate SQL query to fetch the required data.'
         ),
         (
             'query_sql',
-            "This task execute SQL. Not a LLM task"
+            'This task execute SQL. Not a LLM task'
+        ),
+        (
+            'prepare_formulate_response',
+            'This task determines which information names in the current memory are most relevant '
+            'to the objective at hand for generating a response'
+        ),
+        (
+            'formulate_response',
+            'This task generates a response to user using collected information suggested by '
+            '"prepare_formulate_response" and current objective and hence '
+            'should be utilized after "prepare_formulate_response" has been executed first.'
         )
     ]
 

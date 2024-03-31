@@ -13,7 +13,8 @@ def main():
     sql_agent = Agent(
         'sql_agent',
         role_description='You are a SQL agent writing and executing SQL queries.',
-        current_objective='Write and execute SQL queries.')
+        current_objective='Write and execute SQL queries, '
+                          'and then, return the response in natural language back to user.')
 
     print('Registering test_agent to env')
     # agent.register_environment(env)

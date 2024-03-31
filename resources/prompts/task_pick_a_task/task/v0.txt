@@ -1,5 +1,5 @@
 Currently, the names of the information available is listed below.
-{information_cache}
+{information_cache_keys}
 
 The latest input from the user is: {user_input}.
 

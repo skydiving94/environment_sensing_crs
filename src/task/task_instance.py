@@ -36,10 +36,10 @@ class TaskInstance:
         self.output_information_spec = output_information_spec
 
     def trigger(self, llm_instance: BaseChatModel) -> Dict[str, Information]:
-        # How do I get information here? 'Find the best top rating movie in 2021.'
         max_retry = 5
         count = 0
         error_message_added = False
+        response_data = {}
         while count < max_retry:
             count += 1
             response = llm_instance.invoke(
@@ -53,9 +53,11 @@ class TaskInstance:
                 break
             except Exception as e:
                 print("Parsing Json Error", response.content, "Exception:", e)
-                # Add error message to task_prompt
-                self.task_prompt += "\nJson string is not parsable, please correct it according following message: " + str(e)
-                error_message_added = True
+                if not error_message_added:
+                    self.task_prompt += (
+                        '\nJson string is not parsable, '
+                        f'please correct it according following message: {e}')
+                    error_message_added = True
             
         informations = dict()
         for key in response_data.keys():
