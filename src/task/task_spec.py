@@ -4,8 +4,9 @@ from typing import Dict, List, Optional
 from dotenv import load_dotenv
 
 from src.task.task_instance import TaskInstance
-from src.utils.typed_dicts.information_spec import InformationSpec, parse_information_spec
 from src.utils.prompt_utils import load_prompt_template, replace_all_keys_in_prompt_template
+from src.utils.typed_dicts.information_spec import InformationSpec, parse_information_spec
+from src.task import get_all_task_spec_paths
 
 load_dotenv()
 
@@ -43,6 +44,12 @@ class TaskSpec:
     # The temperature for when the task is executed.
     temperature: float
 
+    # Whether the task is llm_task
+    is_llm_task: bool
+
+    # What is the next task of the current one, if any
+    next_task: Optional['TaskSpec']
+
     def __init__(self, task_spec_str: Optional[str] = None, task_spec_path: Optional[str] = None):
         task_spec_dict: Dict = self._load_task_spec_dict(task_spec_path, task_spec_str)
 
@@ -64,6 +71,14 @@ class TaskSpec:
         self.is_terminating_task = task_spec_dict['is_terminating_task'] \
             if 'is_terminating_task' in task_spec_dict \
             else False
+        self.is_llm_task = task_spec_dict.get('is_llm_task', True)
+
+        if 'next_task' in task_spec_dict and task_spec_dict['next_task'] != '':
+            next_task_name = task_spec_dict['next_task']
+            next_task_path = get_all_task_spec_paths()[next_task_name]
+            self.next_task = TaskSpec(task_spec_path=next_task_path)
+        else:
+            self.next_task = None
 
     def build_task_instance(
             self,
@@ -73,6 +88,8 @@ class TaskSpec:
         task_prompt = \
             (replace_all_keys_in_prompt_template(self.task_prompt_template,
                                                  prompt_key_to_val)
+             # make sure there is a newline between the task prompt and the output prompt
+             + "\n"
              + replace_all_keys_in_prompt_template(
                         PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT,
                         {'output_format': self.output_information_spec_str}))
@@ -96,3 +113,4 @@ class TaskSpec:
         else:
             raise ValueError
         return task_spec_dict
+

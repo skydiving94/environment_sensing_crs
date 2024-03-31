@@ -1,5 +1,5 @@
 from typing import Callable, Any, Tuple, Optional, Dict
-
+from .query_sql_database import do_query_sql_database
 
 def get_all_available_action_data() -> Dict[str, Tuple[Optional[str], Callable[..., Any]]]:
     """
@@ -9,5 +9,7 @@ def get_all_available_action_data() -> Dict[str, Tuple[Optional[str], Callable[.
     and the actual function.
     """
 
-    # TODO: Implement this function!
-    return {}
+    # FIXME: Implement this function! Load all actions from actions directory.
+    return {
+        'do_query_sql_database': ('execute a SQL query', do_query_sql_database)
+    }

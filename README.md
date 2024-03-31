@@ -10,4 +10,4 @@
 * Download dataset here: https://github.com/RUCAIBox/TG-ReDial
 
 ## MovieLens
-This [Notion Link](https://www.notion.so/zhejian/Design-the-task-specification-format-template-to-be-adopted-for-all-task-specifications-0f702033bb404a24ab6597b3e22d6d23?pvs=4) contain detailed dataset information.
+This [Notion Link](https://www.notion.so/zhejian/Examine-the-movie-dataset-and-related-paper-if-needed-bde345da59cb4abe962c8a390dbfe055?pvs=4) contain detailed dataset information.

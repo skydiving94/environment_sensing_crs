@@ -1,5 +1,5 @@
+import os
 from typing import Tuple, List, Dict
-
 
 def get_task_spec_path_by_name(task_spec_name: str) -> str:
     return get_all_task_spec_paths()[task_spec_name]
@@ -10,11 +10,12 @@ def get_all_task_spec_paths() -> Dict[str, str]:
     Return a map of task name to their paths corresponding to the latest version v[n].json
      under the resource directory programmatically.
     """
+    # Read task specs from .env
     task_spec_paths = {
-        'draw_more_info': '/Users/timowang/Developer/environment_sensing_crs/'
-                          'resources/task_specs/draw_more_info/v0.json',
-        'pick_a_task': '/Users/timowang/Developer/environment_sensing_crs/'
-                       'resources/task_specs/pick_a_task/v0.json',
+        'draw_more_info': os.getenv('TASK_SPEC_FOR_DRAW_MORE_INFO_PATH', default="./resources/task_specs/draw_more_info/v0.json"),
+        'pick_a_task': os.getenv('TASK_SPEC_FOR_PICK_A_TASK', default='resources/task_specs/pick_a_task/v1.json'),
+        'generate_sql': os.getenv('TASK_SPEC_FOR_GENERATE_SQL', default='/Users/zhejianpeng/project/environment_sensing_crs/resources/task_specs/generate_sql/v0.json'),
+        'query_sql': os.getenv('TASK_SPEC_FOR_QUERY_SQL', default='/Users/zhejianpeng/project/environment_sensing_crs/resources/task_specs/query_sql/v0.json')
     }
     return task_spec_paths
 
@@ -25,6 +26,7 @@ def get_all_available_task_name_description_pairs() -> List[Tuple[str, str]]:
     and return their name and description.
     """
     # FIXME: Implement the actual functionality so it can load dynamically!
+    # Maybe we can read from task_specs:description?
     task_name_description_pairs: List[Tuple[str, str]] = [
         (
             'draw_more_info',
@@ -35,6 +37,14 @@ def get_all_available_task_name_description_pairs() -> List[Tuple[str, str]]:
             'pick_a_task',
             'The agent should decide which task it should execute given existing information.'
         ),
+        (
+            'generate_sql',
+            "The agent should understand user's request and generate SQL query to fetch the required data."
+        ),
+        (
+            'query_sql',
+            "This task execute SQL. Not a LLM task"
+        )
     ]
 
     return task_name_description_pairs

@@ -2,8 +2,8 @@ import threading
 from collections import deque
 from typing import List, Dict, Optional, Set
 
-from src.utils.environment_utils import get_agent_output_information_name
 from src.information_cache.information import Information
+from src.utils.environment_utils import get_agent_output_information_name
 
 
 class Environment:
@@ -73,17 +73,31 @@ Information Sources: {list(self._information_sources.keys())}
         # That way we can avoid having circular references?
         return {agent_id: 'OK' for agent_id in self._agent_ids}
 
+    def add_information_to_information_source(self, information_name: str,
+                                              information_val: Information) -> None:
+        """
+        This should allow an agent to add some new information to an information source.
+        :param information_name: The name of the information source.
+        :param information_val: The actual value.
+        """
+        raise NotImplementedError
+
     def _monitor(self):
         """
         Monitor all information sources related to agent output.
         Print out any agent response if available.
         """
         while not self._stop_event.is_set():
-            for agent_id in self._agent_ids:
+            for agent_id in set(self._agent_ids):
                 information_name = get_agent_output_information_name(agent_id)
-                while len(self._information_sources[information_name]) > 0:
-                    print(self._information_sources[information_name][0])
-                    self._information_sources[information_name].popleft()
+                # TODO: How do you know information_name is in self._information_sources? 
+                if information_name in self._information_sources.keys():
+                    while len(self._information_sources[information_name]) > 0:
+                        print(self._information_sources[information_name][0])
+                        self._information_sources[information_name].popleft()
+                else:
+                    print(information_name, "not in self._information_sources.keys()")
+                    pass
 
     def _start_monitor_thread(self):
         self._stop_event = threading.Event()
