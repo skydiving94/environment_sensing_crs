@@ -93,7 +93,8 @@ Information Sources: {list(self._information_sources.keys())}
                 # TODO: How do you know information_name is in self._information_sources? 
                 if information_name in self._information_sources.keys():
                     while len(self._information_sources[information_name]) > 0:
-                        print(self._information_sources[information_name][0])
+                        print(f'Agent {agent_id}: '
+                              f'{self._information_sources[information_name][0].value}')
                         self._information_sources[information_name].popleft()
                 else:
                     print(information_name, "not in self._information_sources.keys()")

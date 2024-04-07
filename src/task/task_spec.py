@@ -50,6 +50,9 @@ class TaskSpec:
     # What is the next task of the current one, if any
     next_task: Optional['TaskSpec']
 
+    is_response_generating_task: bool
+    is_terminating_task: bool
+
     def __init__(self, task_spec_str: Optional[str] = None, task_spec_path: Optional[str] = None):
         task_spec_dict: Dict = self._load_task_spec_dict(task_spec_path, task_spec_str)
 
@@ -72,9 +75,12 @@ class TaskSpec:
         self.temperature = task_spec_dict['temperature'] \
             if 'temperature' in task_spec_dict \
             else 0.5
+        self.is_response_generating_task = task_spec_dict['is_response_generating_task'] \
+            if 'is_response_generating_task' in task_spec_dict \
+            else False
         self.is_terminating_task = task_spec_dict['is_terminating_task'] \
             if 'is_terminating_task' in task_spec_dict \
-            else False
+            else False or self.is_response_generating_task
         self.is_llm_task = task_spec_dict.get('is_llm_task', True)
 
         if 'next_task' in task_spec_dict and task_spec_dict['next_task'] != '':

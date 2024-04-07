@@ -44,7 +44,7 @@ class TaskInstance:
             count += 1
             response = llm_instance.invoke(
                 self.task_prompt,
-                temperature=0.0,
+                temperature=self.temperature,
                 max_tokens=500,
                 top_p=1.0,
                 timeout=10)
@@ -55,7 +55,7 @@ class TaskInstance:
                 print("Parsing Json Error", response.content, "Exception:", e)
                 if not error_message_added:
                     self.task_prompt += (
-                        '\nJson string is not parsable, '
+                        '\nJSON string is not parsable, '
                         f'please correct it according following message: {e}')
                     error_message_added = True
             

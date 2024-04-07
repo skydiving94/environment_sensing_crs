@@ -1,10 +1,11 @@
+import json
 from typing import Any, List, Tuple, Set, Dict, Optional
 
 from src.information_cache.information_relation import InformationRelation
 from src.utils.enums.information_type import InformationType
 from src.utils.typed_dicts.information_spec import InformationSpec
 
-Information_valueType = str | bool | int | float | List | Tuple | object
+InformationValueType = str | bool | int | float | List | Tuple | object
 
 
 class Information:
@@ -16,11 +17,13 @@ class Information:
     # The raw _value of the information encoded as a string.
     _raw_value: str
     # The _value of the information parsed into its proper type.
-    _value: Information_valueType
+    _value: InformationValueType
     # The _name of the information.
     _name: str
     # The type of this information.
     _information_type: InformationType
+    # A brief description of the information.
+    _description: Optional[str]
     # The info spec for this information.
     _information_spec: Optional[InformationSpec]
     # TODO: The neighbours of this information.
@@ -32,11 +35,14 @@ class Information:
                  raw_value: Any,
                  name: str = '',
                  information_type: InformationType = InformationType.STRING,
-                 information_spec: Optional[InformationSpec] = None):
+                 information_spec: Optional[InformationSpec] = None,
+                 description: Optional[str] = None):
         self._raw_value = str(raw_value)
         self._name = name
         self._information_type = information_type
         self._information_spec = information_spec
+        self._description = description
+
         self._is_value_parsed = True
         self._value = self._parse_raw_value_by_information_type(
             raw_value,
@@ -68,6 +74,10 @@ class Information:
     def is_value_parse(self):
         return self._is_value_parsed
 
+    @property
+    def description(self):
+        return self._description
+
     def add_neighbor(
             self,
             information: 'Information',
@@ -83,7 +93,7 @@ class Information:
             self,
             _raw_value: Any,
             _information_type: InformationType,
-            _information_spec: Optional[InformationSpec]) -> Information_valueType:
+            _information_spec: Optional[InformationSpec]) -> InformationValueType:
         """
         Given a raw _value and its type, parse it to its appropriate type.
         """
@@ -125,8 +135,7 @@ class Information:
             self._is_value_parsed = False
             return _raw_value
 
-        # TODO: Postpone until actually needed.
-        raise NotImplementedError
+        return json.loads(_raw_value.replace('\'', '"'))
 
     def _parse_tuple(self, _raw_value: str, _information_spec: Optional[InformationSpec]) -> List:
         # TODO: Postpone until actually needed.

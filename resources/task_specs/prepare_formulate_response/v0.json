@@ -5,7 +5,8 @@
   "task_prompt_template": "TASK_PROMPT_TEMPLATE_FOR_DECIDE_INFO_FOR_PREPARE_FORMULATE_RESPONSE",
   "output_information_spec": {
     "information_names_for_response_generation": {
-      "information_type": "array"
+      "information_type": "array",
+      "item_type": "string"
     },
     "reasoning": {
       "information_type": "string"

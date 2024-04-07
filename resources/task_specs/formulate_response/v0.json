@@ -12,8 +12,9 @@
       "information_type": "string"
     }
   },
-  "actions": ["do_collect_information_by_names"],
+  "action_names": ["do_collect_information_by_names"],
   "is_llm_task": true,
   "temperature": 0.5,
-  "is_terminating_task": true
+  "is_terminating_task": true,
+  "is_response_generating_task": true
 }

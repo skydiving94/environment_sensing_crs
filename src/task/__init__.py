@@ -33,11 +33,6 @@ def get_all_available_task_name_description_pairs() -> List[Tuple[str, str]]:
     # Maybe we can read from task_specs:description?
     task_name_description_pairs: List[Tuple[str, str]] = [
         (
-            'draw_more_info',
-            'The agent should keep drawing more information as the existing one is not '
-            'sufficient to make a decision on.'
-        ),
-        (
             'pick_a_task',
             'The agent should decide which task it should execute given existing information.'
         ),
@@ -60,7 +55,12 @@ def get_all_available_task_name_description_pairs() -> List[Tuple[str, str]]:
             'This task generates a response to user using collected information suggested by '
             '"prepare_formulate_response" and current objective and hence '
             'should be utilized after "prepare_formulate_response" has been executed first.'
-        )
+        ),
+        (
+            'draw_more_info',
+            'The agent should keep drawing more information as the existing one is not '
+            'sufficient to make a decision on.'
+        ),
     ]
 
     return task_name_description_pairs

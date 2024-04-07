@@ -1,9 +1,12 @@
 # Query SQL Database action
 import json
 import os
+import sqlite3
 import string
 from copy import deepcopy
 from typing import Dict
+
+import pandas as pd
 
 
 # TODO: Init this database connection in a better way
@@ -37,12 +40,14 @@ def _do_query_sql_database(sql_query: str) -> str:
     #   outside tools such as db connector.
     db_path = os.getenv('MOVIELENS_DB_PATH', default='')
     print("Read db from:", db_path)
-    # conn = sqlite3.connect(db_path)
-    # query_result = pd.read_sql_query(sql_query, conn)
-    query_result = {'title': 'Interstellar', 'year': '2016'}
-    print(query_result['title'])
-    return json.dumps(query_result)
-    # return json.dumps(query_result.to_json())
+    conn = sqlite3.connect(db_path)
+    query_result = pd.read_sql_query(sql_query, conn)
+    return json.dumps(query_result.to_json())
+
+    # FIXME: Remove after finishing debugging!
+    # query_result = {'title': 'Interstellar', 'year': '2016'}
+    # print(query_result['title'])
+    # return json.dumps(query_result)
 
 
 # noinspection SqlSignature

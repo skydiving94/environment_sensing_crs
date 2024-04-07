@@ -1,8 +1,8 @@
-import json
-from typing import Set, Dict, List, Optional
+from typing import Set, Dict, List
 
 from src.information_cache.information import Information
 from src.information_cache.information_relation import InformationRelation
+from src.utils.collection_utils import stringify_collection_as_unordered_list
 
 
 class InformationCache:
@@ -39,7 +39,7 @@ class InformationCache:
         self._neighbors[information_relation].add(information_cache)
 
     def get_information_names_str(self) -> str:
-        return json.dumps(self.get_information_names())
+        return stringify_collection_as_unordered_list(self.get_information_names())
 
     def get_information_names(self) -> List[str]:
         return list(self._informations.keys())
