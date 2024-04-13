@@ -414,7 +414,7 @@ class Agent:
 
         # TODO: In the future, consider saving the short-term info cache
         #  to a long-term info storage.
-        self._information_cache = InformationCache()
+        #  Until then, information_cache will serve as the long-term storage.
 
         # TODO: Also, reset the priorities for all information sources to default value.
 
