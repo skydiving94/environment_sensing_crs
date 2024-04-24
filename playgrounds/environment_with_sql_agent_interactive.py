@@ -1,4 +1,4 @@
-from src.agent.agent import Agent
+from src.agent.agent_factory import AgentFactory
 from src.environment.environment import Environment
 
 
@@ -10,11 +10,13 @@ def main():
     print('Creating an agent: test_agent')
 
     # Create a SQL Agent handling users request
-    sql_agent = Agent(
-        'sql_agent',
+    agent_factory = AgentFactory()
+    sql_agent = agent_factory.create_knowledge_based_agent(
+        agent_id='sql_agent',
         role_description='You are a SQL agent writing and executing SQL queries.',
         current_objective='Write and execute SQL queries, '
                           'and then, return the response in natural language back to user.')
+
 
     print('Registering test_agent to env')
     # agent.register_environment(env)
