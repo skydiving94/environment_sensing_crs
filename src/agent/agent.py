@@ -287,7 +287,7 @@ class Agent:
 
         task_spec = TaskSpec(
             self._task_specs_root_path,
-            self._resource_root_path,
+            self._prompts_root_path,
             task_spec_path=os.getenv('TASK_SPEC_FOR_PICK_A_TASK')
         )
         result = self._execute_a_task(task_spec)

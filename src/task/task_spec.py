@@ -145,5 +145,10 @@ class TaskSpec:
             raise ValueError
         return task_spec_dict
 
-    def _load_prompt_template(self, prompt_template_path):
-        return load_prompt_template(os.path.join(self.prompts_root_path, prompt_template_path))
+    def _load_prompt_template(self, prompt_template):
+        prompt_template_path = os.getenv(prompt_template)
+        if prompt_template_path is not None:
+            return load_prompt_template(
+                os.path.join(self.prompts_root_path, prompt_template_path))
+        else:
+            return ''
