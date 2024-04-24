@@ -24,7 +24,6 @@ class AgentFactory:
         in_information_queue_names: Optional[List[str]] = None,
         out_information_queue_names: Optional[List[str]] = None,
         llm_provider: str = 'openai',
-        current_objective: Optional[str] = None
     ):
         if code_root_path is not None:
             self._resource_root_path = os.path.join(code_root_path, 'resources')
@@ -35,35 +34,39 @@ class AgentFactory:
         self._in_information_queue_names = in_information_queue_names
         self._out_information_queue_names = out_information_queue_names
         self._llm_provider = llm_provider
-        self._current_objective = current_objective
 
     def create_knowledge_based_agent(
         self,
         agent_id: str,
         role_description: str,
+        current_objective: Optional[str] = None
     ):
         return self._create_agent(
             agent_id,
             role_description,
-            os.path.join(self._resource_root_path, 'knowledge_based_agent')
+            os.path.join(self._resource_root_path, 'knowledge_based_agent'),
+            current_objective
         )
 
     def create_chat_based_agent(
         self,
         agent_id: str,
         role_description: str,
+        current_objective: Optional[str] = None
     ):
         return self._create_agent(
             agent_id,
             role_description,
-            os.path.join(self._resource_root_path, 'chat_based_agent')
+            os.path.join(self._resource_root_path, 'chat_based_agent'),
+            current_objective
         )
 
     def _create_agent(
         self,
         agent_id: str,
         role_description: str,
-        resource_root_path: str
+        resource_root_path: str,
+        current_objective: Optional[str] = None
     ):
         return Agent(
             agent_id,
@@ -73,5 +76,5 @@ class AgentFactory:
             self._in_information_queue_names,
             self._out_information_queue_names,
             self._llm_provider,
-            self._current_objective
+            current_objective
         )
