@@ -1,4 +1,5 @@
 import json
+import os.path
 from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
@@ -9,9 +10,6 @@ from src.utils.prompt_utils import load_prompt_template, replace_all_keys_in_pro
 from src.utils.typed_dicts.information_spec import InformationSpec, parse_information_spec
 
 load_dotenv()
-
-PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT = load_prompt_template(
-    'PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT_PATH')
 
 
 class TaskSpec:
@@ -53,15 +51,32 @@ class TaskSpec:
     is_response_generating_task: bool
     is_terminating_task: bool
 
-    def __init__(self, task_spec_str: Optional[str] = None, task_spec_path: Optional[str] = None):
-        task_spec_dict: Dict = self._load_task_spec_dict(task_spec_path, task_spec_str)
+    prompt_template_for_task_spec_output: str
+    task_specs_root_path: str
+    prompts_root_path: str
+
+    def __init__(
+        self,
+        task_specs_root_path: str,
+        prompts_root_path: str,
+        task_spec_str: Optional[str] = None,
+        task_spec_path: Optional[str] = None,
+    ):
+        self.task_specs_root_path = task_specs_root_path
+        self.prompts_root_path = prompts_root_path
+
+        task_spec_dict: Dict = self._load_task_spec_dict(
+            task_spec_path, task_spec_str, task_specs_root_path
+        )
 
         output_information_spec = task_spec_dict['output_information_spec']
         self.name = task_spec_dict['name']
         self.description = task_spec_dict['description']
 
-        self.system_prompt_template = load_prompt_template(task_spec_dict['system_prompt_template'])
-        self.task_prompt_template = load_prompt_template(task_spec_dict['task_prompt_template'])
+        self.system_prompt_template = (
+            self._load_prompt_template(task_spec_dict['system_prompt_template']))
+        self.task_prompt_template = (
+            self._load_prompt_template(task_spec_dict['task_prompt_template']))
 
         self.input_information_names = (
             task_spec_dict['input_information_names']
@@ -86,9 +101,14 @@ class TaskSpec:
         if 'next_task' in task_spec_dict and task_spec_dict['next_task'] != '':
             next_task_name = task_spec_dict['next_task']
             next_task_path = get_all_task_spec_paths()[next_task_name]
-            self.next_task = TaskSpec(task_spec_path=next_task_path)
+            self.next_task = TaskSpec(
+                task_specs_root_path, prompts_root_path, task_spec_path=next_task_path
+            )
         else:
             self.next_task = None
+
+        self.prompt_template_for_task_spec_output = (
+            self._load_prompt_template('PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT_PATH'))
 
     def build_task_instance(
             self,
@@ -101,8 +121,9 @@ class TaskSpec:
              # make sure there is a newline between the task prompt and the output prompt
              + "\n"
              + replace_all_keys_in_prompt_template(
-                        PROMPT_TEMPLATE_FOR_TASK_SPEC_OUTPUT,
-                        {'output_format': self.output_information_spec_str}))
+                    self.prompt_template_for_task_spec_output,
+                    {'output_format': self.output_information_spec_str}
+                ))
         return TaskInstance(name=self.name,
                             system_prompt=system_prompt,
                             task_prompt=task_prompt,
@@ -110,12 +131,12 @@ class TaskSpec:
                             output_information_spec=self.output_information_spec)
 
     @staticmethod
-    def _load_task_spec_dict(task_spec_path, task_spec_str):
+    def _load_task_spec_dict(task_spec_path, task_spec_str, task_specs_root_path):
         if ((task_spec_str is None and task_spec_path is None)
                 or (task_spec_str is not None and task_spec_path is not None)):
             raise ValueError('Exactly one of task_spec_str or task_spec_path should be provided.')
         elif task_spec_path is not None:
-            with open(task_spec_path) as fp:
+            with open(os.path.join(task_specs_root_path, task_spec_path)) as fp:
                 task_spec_str = fp.read()
                 task_spec_dict = json.loads(task_spec_str)
         elif task_spec_str is not None:
@@ -123,3 +144,6 @@ class TaskSpec:
         else:
             raise ValueError
         return task_spec_dict
+
+    def _load_prompt_template(self, prompt_template_path):
+        return load_prompt_template(os.path.join(self.prompts_root_path, prompt_template_path))

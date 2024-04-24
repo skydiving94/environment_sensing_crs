@@ -1,0 +1,23 @@
+Currently, the names of the information available is listed below.
+{information_cache_keys}
+
+The latest input from the user is: {user_input}.
+
+The current objective is {current_objective}.
+
+You need to pick a task from the following list.
+
+{all_possible_tasks}
+
+If there is no objective, then the priority is to pick a task that helps set an objective.
+
+Otherwise, the priority is to pick a task that can achieve this objective given
+the current information.
+
+Example outputs:
+{{"task_name": "Task_A"}}
+{{"task_name": "Task_B"}}
+{{"task_name": "pick_a_task"}}
+{{"task_name": "Task_C"}}
+{{"task_name": "Task_D"}}
+{{"task_name": "draw_more_info"}}

@@ -1,0 +1,15 @@
+{
+  "name": "draw_more_info",
+  "description": "The agent should keep drawing more information as the existing one is not sufficient to make a decision on.",
+  "system_prompt_template": "",
+  "task_prompt_template": "PROMPT_TEMPLATE_FOR_DRAW_MORE_INFO_PATH",
+  "input_information_names": [],
+  "output_information_spec": {
+    "information_queue_names": {
+      "information_type": "array",
+      "item_type": "string"
+    }
+  },
+  "action_names": [],
+  "temperature": 0.2
+}

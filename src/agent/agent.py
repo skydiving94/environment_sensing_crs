@@ -49,6 +49,9 @@ class Agent:
     _agent_id: str
     _role_description: str
     _action_description_pairs: Dict[str, Tuple[Optional[str], Callable[..., Any]]]
+    _task_specs_root_path: str
+    _prompts_root_path: str
+    _resource_root_path: str
     _task_specs: List[TaskSpec]
     _llm_instance: BaseChatModel
 
@@ -82,14 +85,17 @@ class Agent:
     Constructor
     """
 
-    def __init__(self,
-                 agent_id: str,
-                 role_description: str,
-                 environment: Optional[Environment] = None,
-                 in_information_queue_names: Optional[List[str]] = None,
-                 out_information_queue_names: Optional[List[str]] = None,
-                 llm_provider: str = 'openai',
-                 current_objective: Optional[str] = None):
+    def __init__(
+        self,
+        agent_id: str,
+        role_description: str,
+        resource_root_path: str,
+        environment: Optional[Environment] = None,
+        in_information_queue_names: Optional[List[str]] = None,
+        out_information_queue_names: Optional[List[str]] = None,
+        llm_provider: str = 'openai',
+        current_objective: Optional[str] = None
+    ):
         """
         An agent can perform a variety of tasks.
         To begin with, it can interact with a user by listening to their input and talking back to
@@ -100,6 +106,11 @@ class Agent:
 
         self._agent_id = agent_id
         self._role_description = role_description
+
+        self._resource_root_path = resource_root_path
+        self._task_specs_root_path = os.path.join(resource_root_path, 'task_specs')
+        self._prompts_root_path = os.path.join(resource_root_path, 'prompts')
+
         self._llm_instance = get_llm_instance(llm_provider)
 
         # TODO: Replace the following dicts with an ADT called InformationQueue
@@ -274,7 +285,11 @@ class Agent:
         :return: The task chosen by the agent.
         """
 
-        task_spec = TaskSpec(task_spec_path=os.getenv('TASK_SPEC_FOR_PICK_A_TASK'))
+        task_spec = TaskSpec(
+            self._task_specs_root_path,
+            self._resource_root_path,
+            task_spec_path=os.getenv('TASK_SPEC_FOR_PICK_A_TASK')
+        )
         result = self._execute_a_task(task_spec)
         if 'task_name' not in result or 'reasoning' not in result:
             return None
@@ -282,7 +297,11 @@ class Agent:
         reasoning = result['reasoning'].value
         print(f'Task picked: {task_name}')
         print(f'Reasoning: {reasoning}')
-        return TaskSpec(task_spec_path=get_task_spec_path_by_name(task_name))
+        return TaskSpec(
+            self._task_specs_root_path,
+            self._prompts_root_path,
+            task_spec_path=get_task_spec_path_by_name(task_name)
+        )
 
     def _execute_a_task(self, task_spec: TaskSpec) -> Dict:
         """
