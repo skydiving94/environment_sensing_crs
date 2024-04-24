@@ -1,4 +1,4 @@
-from src.agent.agent import Agent
+from src.agent.agent_factory import AgentFactory
 from src.environment.environment import Environment
 
 
@@ -8,7 +8,10 @@ def main():
     print(str(env))
 
     print('Creating an agent: test_agent')
-    agent = Agent('test_agent', 'You are a test agent')
+    agent_factory = AgentFactory()
+    agent = agent_factory.create_knowledge_based_agent(
+        'test_agent', 'You are a test agent'
+    )
 
     print('Registering test_agent to env')
     agent.register_environment(env)

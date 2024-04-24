@@ -1,0 +1,21 @@
+Now that it is time to formulate a response which is to be returned to the user,
+the aim of this task is to utilize all collected information to generate a text
+that best accomplish the objective.
+
+Currently, the names of the information available is listed below.
+{information_cache_keys}
+
+The current objective is {current_objective}.
+
+Decide which pieces of information are useful for formulating the response,
+and return an array of information names in the list above.
+The returned output must be parsable into a dict using json.loads() from Python.
+
+1. information_names_for_response_generation: It is an array of strings, where the string contains
+   one or more of the following names:
+   {information_cache_keys}
+2. reasoning: The reason why these information names are chosen.
+
+Example outputs:
+{{"information_names_for_response_generation": ["weather_condition"], "reasoning": "As the objective is to find the weather for New York, weather_condition seems to contain relevant information for this objective"}}
+{{"information_names_for_response_generation": ["shortest_path", "start_position", "end_position"], "reasoning": "As the objective is to find the shortest path between A and B, shortest_path can be used to formulate a response and return it back to user."}}
