@@ -10,6 +10,19 @@ load_dotenv()
 
 
 class AgentFactory:
+    """
+    This class is for creating different types of agents sharing the same:
+    - code_root_path
+    - environment
+    - in_information_queue_names
+    - out_information_queue_names
+    - llm_provider
+
+    Two types of agents are supported at the moment:
+    - chat_based_agent
+    - knowledge_based_agent
+    """
+
     _resource_root_path: str
     _environment: Optional[Environment]
     _in_information_queue_names: Optional[List[str]]
