@@ -7,22 +7,21 @@ def main():
     env = Environment()
     print(str(env))
 
-    print('Creating an agent: sql_agent')
+    print('Creating an agent: interactive_sql_agent')
 
     # Create a SQL Agent handling users request
     agent_factory = AgentFactory()
     sql_agent = agent_factory.create_knowledge_based_agent(
         agent_id='sql_agent',
         role_description='You are a SQL agent writing and executing SQL queries.',
-        current_objective='Write and execute SQL queries, '
-                          'and then, return the response in natural language back to user.')
+        current_objective='Write and execute SQL queries.')
 
-    print('Registering sql_agent to env')
+    print('Registering interactive_sql_agent to env')
     # agent.register_environment(env)
     sql_agent.register_environment(env)
     print(str(env))
 
-    print('Registering sql_agent with an info name: INFO2')
+    print('Registering interactive_sql_agent with an info name: INFO2')
     # agent.register_information_queue('INFO1')
     sql_agent.register_information_queue('INFO2')
     print(str(env))
