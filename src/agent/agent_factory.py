@@ -17,6 +17,8 @@ class AgentFactory:
     - in_information_queue_names
     - out_information_queue_names
     - llm_provider
+    Note: environment and information queue names can be left as None, and can be registered to
+        each agent one by one.
 
     Two types of agents are supported at the moment:
     - chat_based_agent
