@@ -1,0 +1,9 @@
+All of the activity logs are listed below.
+These include input from users, intermediary task results, and responses made.
+{activity_logs}
+
+Decide which information queue can provide information
+that helps to address users' need.
+
+Below is a list names of all available information sources.
+{information_queue_names}

@@ -1,0 +1,20 @@
+{
+  "name": "formulate_response",
+  "description": "Utilizing the information provided as well as the current objective, formulate a response in natural language.",
+  "system_prompt_template": "",
+  "task_prompt_template": "TASK_PROMPT_TEMPLATE_FOR_FORMULATE_RESPONSE",
+  "input_information_names": ["information_names_for_response_generation"],
+  "output_information_spec": {
+    "response": {
+      "information_type": "string"
+    },
+    "reasoning": {
+      "information_type": "string"
+    }
+  },
+  "action_names": ["do_collect_information_by_names"],
+  "is_llm_task": true,
+  "temperature": 0.5,
+  "is_terminating_task": true,
+  "is_response_generating_task": true
+}
