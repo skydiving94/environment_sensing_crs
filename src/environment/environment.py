@@ -2,7 +2,7 @@ import threading
 from collections import deque
 from typing import List, Dict, Optional, Set
 
-from src.information_cache.information import Information
+from src.memory.information import Information
 from src.utils.environment_utils import get_agent_output_information_name
 
 

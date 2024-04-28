@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 from typing import Dict, List
 
-from src.information_cache.information_cache import InformationCache
+from src.memory.information_cache import InformationCache
 
 
 def do_collect_information_by_names(**kwargs) -> Dict[str, str]:

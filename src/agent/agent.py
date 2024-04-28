@@ -9,8 +9,8 @@ from langchain_core.language_models import BaseChatModel
 
 from src.agent.actions import get_all_available_action_data
 from src.environment.environment import Environment
-from src.information_cache.information import Information
-from src.information_cache.information_cache import InformationCache
+from src.memory.information import Information
+from src.memory.information_cache import InformationCache
 from src.llm import get_llm_instance
 from src.task import get_stringified_all_available_task_name_description_pairs, \
     get_task_spec_path_by_name

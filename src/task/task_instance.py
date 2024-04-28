@@ -3,7 +3,7 @@ from typing import Dict
 
 from langchain_core.language_models import BaseChatModel
 
-from src.information_cache.information import Information
+from src.memory.information import Information
 from src.utils.typed_dicts.information_spec import InformationSpec
 
 

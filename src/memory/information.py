@@ -1,7 +1,7 @@
 import json
 from typing import Any, List, Tuple, Set, Dict, Optional
 
-from src.information_cache.information_relation import InformationRelation
+from src.memory.information_relation import InformationRelation
 from src.utils.enums.information_type import InformationType
 from src.utils.typed_dicts.information_spec import InformationSpec
 

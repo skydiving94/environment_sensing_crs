@@ -1,6 +1,6 @@
 from typing import List
 
-from src.information_cache.information_cache import InformationCache
+from src.memory.information_cache import InformationCache
 from src.utils.typed_dicts.review_result import ReviewResult
 
 

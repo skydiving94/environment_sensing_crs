@@ -1,7 +1,7 @@
 from typing import Set, Dict, List
 
-from src.information_cache.information import Information
-from src.information_cache.information_relation import InformationRelation
+from src.memory.information import Information
+from src.memory.information_relation import InformationRelation
 from src.utils.collection_utils import stringify_collection_as_unordered_list
 
 
