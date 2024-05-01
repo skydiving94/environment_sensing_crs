@@ -1,5 +1,6 @@
 from typing import Set, Dict, List
 
+from src.memory.activity_log import ActivityLog
 from src.memory.information import Information
 from src.memory.information_relation import InformationRelation
 from src.utils.collection_utils import stringify_collection_as_unordered_list
@@ -12,6 +13,9 @@ class InformationCache:
     FIXME: the details of the design is yet to be determined and is subject to change.
     """
 
+    # A list of all activity logs stored for this information cache.
+    activity_logs: List[ActivityLog]
+
     # A collection of all informations in a map of info name to a set of actual information.
     # TODO: replace Dict with a priority queue.
     # TODO: periodically cluster all unnamed information and assign each group a name.
@@ -23,6 +27,9 @@ class InformationCache:
     def __init__(self):
         self._informations = dict()
         self._neighbors = dict()
+
+    def add_activity_log(self, activity_log: ActivityLog):
+        self.activity_logs.append(activity_log)
 
     def add_information(self, information: Information):
         information_name = information.name
@@ -37,6 +44,9 @@ class InformationCache:
         if information_relation not in self._neighbors:
             self._neighbors[information_relation] = set()
         self._neighbors[information_relation].add(information_cache)
+
+    def get_activity_logs_str(self) -> str:
+        return stringify_collection_as_unordered_list(self.activity_logs)
 
     def get_information_names_str(self) -> str:
         return stringify_collection_as_unordered_list(self.get_information_names())

@@ -18,5 +18,5 @@ class ActivityLog:
         self.log_time = log_time
 
     def __str__(self):
-        return f'{self.log_type} @ {self.log_time}: {self.log_text}\n---------'
+        return f'{self.log_type} @ {self.log_time}: {self.log_text}'
 
