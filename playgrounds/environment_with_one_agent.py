@@ -9,7 +9,7 @@ def main():
 
     print('Creating an agent: test_agent')
     agent_factory = AgentFactory()
-    agent = agent_factory.create_knowledge_based_agent(
+    agent = agent_factory.create_chat_based_agent(
         'test_agent', 'You are a test agent'
     )
 

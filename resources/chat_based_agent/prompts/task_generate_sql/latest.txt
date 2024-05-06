@@ -5,7 +5,7 @@ The returned json string must be parsable by json.loads().
 
 All of the activity logs are listed below.
 These include input from users, intermediary task results, and responses made.
-{activity_logs}
+{relevant_information}
 The sql query should be formulated to address user's request.
 
 List of available tables:

@@ -9,9 +9,9 @@ from langchain_core.language_models import BaseChatModel
 
 from src.agent.actions import get_all_available_action_data
 from src.environment.environment import Environment
+from src.llm import get_llm_instance
 from src.memory.information import Information
 from src.memory.information_cache import InformationCache
-from src.llm import get_llm_instance
 from src.task import get_stringified_all_available_task_name_description_pairs, \
     get_task_spec_path_by_name
 from src.task.task_spec import TaskSpec
@@ -30,13 +30,15 @@ AGENT_SPECIFIC_INFO_CACHE_KEYS = 'information_cache_keys'
 USER_INPUT_INFO_QUEUE_NAME = 'user_input'
 ALL_POSSIBLE_TASKS = 'all_possible_tasks'
 EXECUTED_TASKS = 'executed_tasks'
+RELEVANT_INFORMATION = 'relevant_information'
 
 SPECIAL_INFORMATION_NAME_KEYS = [
     AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE,
     AGENT_SPECIFIC_INFO_INFORMATION_QUEUE_NAMES,
     AGENT_SPECIFIC_INFO_CACHE_KEYS,
     ALL_POSSIBLE_TASKS,
-    EXECUTED_TASKS
+    EXECUTED_TASKS,
+    RELEVANT_INFORMATION,
 ]
 MAX_DEPTH = 3
 RESPONSE_INFO_KEY = 'response'
@@ -90,6 +92,7 @@ class Agent:
         agent_id: str,
         role_description: str,
         resource_root_path: str,
+        information_cache: InformationCache,
         environment: Optional[Environment] = None,
         in_information_queue_names: Optional[List[str]] = None,
         out_information_queue_names: Optional[List[str]] = None,
@@ -137,7 +140,7 @@ class Agent:
         # This information queue is independent of the environment.
         self._in_information_queues[USER_INPUT_INFO_QUEUE_NAME] = deque()
 
-        self._information_cache = InformationCache()
+        self._information_cache = information_cache
         self._is_process_finished = False
 
         # TODO: Finish initializing all other fields!
@@ -319,7 +322,7 @@ class Agent:
 
         # Step 1. Build arg_key_to_arg_val based on input information names and the available
         # data the agent has.
-        arg_key_to_arg_val = self._build_arg_key_to_arg_val(task_spec.input_information_names)
+        arg_key_to_arg_val = self._build_arg_key_to_arg_val(task_spec)
 
         # Step 2. Execute all actions for the task.
         action_names = task_spec.action_names
@@ -327,7 +330,7 @@ class Agent:
 
         # Step 3. Build prompt_key_to_val based on current information stored.
         informations = {}
-        prompt_key_to_val = self._build_prompt_key_to_val()
+        prompt_key_to_val = self._build_prompt_key_to_val(task_spec)
         if action_output is not None and len(action_names) > 0:
             prompt_key_to_val['action_output'] = str(action_output)
             # Build information from action output.
@@ -448,7 +451,7 @@ class Agent:
     def _load_action_description_pairs(self):
         self._action_description_pairs = get_all_available_action_data()
 
-    def _get_special_information_key_to_val(self) -> Dict[str, str]:
+    def _get_special_information_key_to_val(self, task_spec: TaskSpec) -> Dict[str, str]:
         return {
             AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE:
                 self._current_objective[0] if len(self._current_objective) > 0 else 'None',
@@ -456,16 +459,21 @@ class Agent:
             AGENT_SPECIFIC_INFO_INFORMATION_QUEUE_NAMES:
                 stringify_collection_as_unordered_list(list(self._in_information_queues.keys())),
             ALL_POSSIBLE_TASKS: get_stringified_all_available_task_name_description_pairs(),
-            EXECUTED_TASKS: stringify_collection_as_unordered_list(self._task_history)
+            EXECUTED_TASKS: stringify_collection_as_unordered_list(self._task_history),
+            RELEVANT_INFORMATION: self._information_cache.retrieve_stringified_information(
+                self._current_objective[0] if len(self._current_objective) > 0 else 'None',
+                task_spec
+            ),
         }
 
-    def _build_arg_key_to_arg_val(self, input_information_names: List[str]) -> Dict[str, Any]:
+    def _build_arg_key_to_arg_val(self, task_spec: TaskSpec) -> Dict[str, Any]:
         """
         Build arg_key2arg_val based on input information names and the available
         data the agent has.
         """
+        input_information_names = task_spec.input_information_names
         # TODO: Replace the following placeholder return.
-        special_information_key_to_val = self._get_special_information_key_to_val()
+        special_information_key_to_val = self._get_special_information_key_to_val(task_spec)
         arg_key_to_arg_val: Dict[str, Any] = {}
         for information_name in input_information_names:
             if information_name in SPECIAL_INFORMATION_NAME_KEYS:
@@ -477,8 +485,8 @@ class Agent:
         arg_key_to_arg_val['information_cache'] = self._information_cache
         return arg_key_to_arg_val
 
-    def _build_prompt_key_to_val(self) -> Dict[str, str]:
-        prompt_key_to_val = self._get_special_information_key_to_val()
+    def _build_prompt_key_to_val(self, task_spec: TaskSpec) -> Dict[str, str]:
+        prompt_key_to_val = self._get_special_information_key_to_val(task_spec)
         informations = self._information_cache.get_informations()
         for key in informations.keys():
             prompt_key_to_val[key] = (

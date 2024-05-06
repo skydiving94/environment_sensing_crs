@@ -1,12 +1,15 @@
+import datetime
+from abc import ABC, abstractmethod
 from typing import Set, Dict, List
 
 from src.memory.activity_log import ActivityLog
 from src.memory.information import Information
 from src.memory.information_relation import InformationRelation
+from src.task.task_spec import TaskSpec
 from src.utils.collection_utils import stringify_collection_as_unordered_list
 
 
-class InformationCache:
+class InformationCache(ABC):
     """
     A graph/network of Information nodes and other InformationCache nodes.
     That is, an information cache can be a network, and also a node of a bigger information cache.
@@ -14,7 +17,7 @@ class InformationCache:
     """
 
     # A list of all activity logs stored for this information cache.
-    activity_logs: List[ActivityLog]
+    _activity_logs: List[ActivityLog]
 
     # A collection of all informations in a map of info name to a set of actual information.
     # TODO: replace Dict with a priority queue.
@@ -27,15 +30,14 @@ class InformationCache:
     def __init__(self):
         self._informations = dict()
         self._neighbors = dict()
-
-    def add_activity_log(self, activity_log: ActivityLog):
-        self.activity_logs.append(activity_log)
+        self._activity_logs = []
 
     def add_information(self, information: Information):
         information_name = information.name
         if information_name not in self._informations:
             self._informations[information_name] = list()
         self._informations[information_name].append(information)
+        self._add_activity_log(information)
 
     def add_neighbor(
             self,
@@ -46,7 +48,7 @@ class InformationCache:
         self._neighbors[information_relation].add(information_cache)
 
     def get_activity_logs_str(self) -> str:
-        return stringify_collection_as_unordered_list(self.activity_logs)
+        return stringify_collection_as_unordered_list(self._activity_logs)
 
     def get_information_names_str(self) -> str:
         return stringify_collection_as_unordered_list(self.get_information_names())
@@ -70,3 +72,17 @@ class InformationCache:
 
     def get_informations(self) -> Dict[str, List[Information]]:
         return self._informations
+
+    def _add_activity_log(self, information: Information):
+        self._activity_logs.append(
+            ActivityLog(information.name, information.raw_value, datetime.datetime.now()))
+
+    @abstractmethod
+    def retrieve_stringified_information(self, objective: str, task_spec: TaskSpec) -> str:
+        """
+        Implement this method in order to get some stringified information for
+        the objective and task description.
+        :param objective: The current objective to achieve.
+        :param task_spec: The description of the current task to execute.
+        :return: a formatted string containing required information to be inserted into prompt.
+        """

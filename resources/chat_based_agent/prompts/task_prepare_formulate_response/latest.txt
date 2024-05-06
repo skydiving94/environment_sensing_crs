@@ -4,7 +4,7 @@ that best addresses user's need.
 
 All of the activity logs are listed below.
 These include input from users, intermediary task results, and responses made.
-{activity_logs}
+{relevant_information}
 
 The returned content must be parsable using json.loads.
 

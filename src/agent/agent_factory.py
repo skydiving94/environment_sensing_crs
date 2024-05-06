@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 
 from src.agent.agent import Agent
 from src.environment.environment import Environment
+from src.memory.information_cache import InformationCache
+from src.memory.information_cache.chat_based_task_agnostic_information_cache import \
+    ChatBasedTaskAgnosticInformationCache
 
 load_dotenv()
 
@@ -56,12 +59,13 @@ class AgentFactory:
         role_description: str,
         current_objective: Optional[str] = None
     ):
-        return self._create_agent(
-            agent_id,
-            role_description,
-            os.path.join(self._resource_root_path, 'knowledge_based_agent'),
-            current_objective
-        )
+        raise NotImplementedError
+        # return self._create_agent(
+        #     agent_id,
+        #     role_description,
+        #     os.path.join(self._resource_root_path, 'knowledge_based_agent'),
+        #     current_objective
+        # )
 
     def create_chat_based_agent(
         self,
@@ -73,6 +77,7 @@ class AgentFactory:
             agent_id,
             role_description,
             os.path.join(self._resource_root_path, 'chat_based_agent'),
+            ChatBasedTaskAgnosticInformationCache(),
             current_objective
         )
 
@@ -81,12 +86,14 @@ class AgentFactory:
         agent_id: str,
         role_description: str,
         resource_root_path: str,
+        information_cache: InformationCache,
         current_objective: Optional[str] = None
     ):
         return Agent(
             agent_id,
             role_description,
             resource_root_path,
+            information_cache,
             self._environment,
             self._in_information_queue_names,
             self._out_information_queue_names,
