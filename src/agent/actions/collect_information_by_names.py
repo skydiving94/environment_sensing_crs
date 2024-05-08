@@ -6,7 +6,10 @@ from src.memory.information_cache import InformationCache
 
 
 def do_collect_information_by_names(**kwargs) -> Dict[str, str]:
-    information_names_for_response_generation = kwargs['information_names_for_response_generation']
+    information_names_for_response_generation = (
+        kwargs['information_names_for_response_generation']
+        if 'information_names_for_response_generation' in kwargs else []
+    )
 
     information_cache: InformationCache = kwargs['information_cache']
 
