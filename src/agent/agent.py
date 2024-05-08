@@ -294,10 +294,10 @@ class Agent:
             task_spec_path=os.getenv('TASK_SPEC_FOR_PICK_A_TASK')
         )
         result = self._execute_a_task(task_spec)
-        if 'task_name' not in result or 'reasoning' not in result:
+        if 'task_pick_a_task_output:task_name' not in result or 'task_pick_a_task_output:reasoning' not in result:
             return None
-        task_name = result['task_name'].value
-        reasoning = result['reasoning'].value
+        task_name = result['task_pick_a_task_output:task_name'].value
+        reasoning = result['task_pick_a_task_output:reasoning'].value
         print(f'Task picked: {task_name}')
         print(f'Reasoning: {reasoning}')
         return TaskSpec(
@@ -335,8 +335,14 @@ class Agent:
             prompt_key_to_val['action_output'] = str(action_output)
             # Build information from action output.
             for key, val in action_output.items():
-                informations[key] = Information(raw_value=val, name=key)
                 prompt_key_to_val[key] = val
+
+                # Append the task name to the front of the action output.
+                key_with_task_name = f'task_{task_spec.name}_output:{key}'
+                informations[key_with_task_name] = Information(
+                    raw_value=val,
+                    name=key_with_task_name
+                )
 
         # Step 4. Get an instance of the task given the contextual information the agent
         # current has, including the result of the action taken.
@@ -358,7 +364,7 @@ class Agent:
             task_output: Dict = self._execute_a_task(task_spec.next_task)
             informations.update(task_output)
         if task_spec.is_response_generating_task:
-            self._talk(self._information_cache.get_top_information_by_name(RESPONSE_INFO_KEY).value)
+            self._talk(self._information_cache.get_most_recent_information_by_substring(RESPONSE_INFO_KEY).value)
 
         # Step 7. Check if this task is a terminating task. i.e. no more processing is needed.
         self._is_process_finished = task_spec.is_terminating_task or self._is_process_finished
@@ -462,7 +468,7 @@ class Agent:
             EXECUTED_TASKS: stringify_collection_as_unordered_list(self._task_history),
             RELEVANT_INFORMATION: self._information_cache.retrieve_stringified_information(
                 self._current_objective[0] if len(self._current_objective) > 0 else 'None',
-                task_spec
+                task_spec,
             ),
         }
 
@@ -479,9 +485,11 @@ class Agent:
             if information_name in SPECIAL_INFORMATION_NAME_KEYS:
                 arg_key_to_arg_val[information_name] = (
                     special_information_key_to_val)[information_name]
-            elif information_name in self._information_cache.get_information_names():
-                information = self._information_cache.get_top_information_by_name(information_name)
-                arg_key_to_arg_val[information_name] = information.value
+            elif self._information_cache.get_most_recent_information_name_containing_substring(
+                information_name
+            ) is not None:
+                information = self._information_cache.get_most_recent_information_by_substring(information_name)
+                arg_key_to_arg_val[information.name] = information.value
         arg_key_to_arg_val['information_cache'] = self._information_cache
         return arg_key_to_arg_val
 

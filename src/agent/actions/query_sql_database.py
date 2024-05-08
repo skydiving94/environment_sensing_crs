@@ -8,12 +8,18 @@ from typing import Dict
 
 import pandas as pd
 
+from src.utils.general_utils import find_latest_information_with_substring
+
 
 # TODO: Init this database connection in a better way
 
 
 def do_query_sql_database(**kwargs) -> Dict[str, str]:
-    sql_query = kwargs['sql_query']
+    sql_query_key = find_latest_information_with_substring(kwargs.keys(), 'sql_query')
+    if sql_query_key is None:
+        return {}
+
+    sql_query = kwargs[sql_query_key]
     print("Executing SQL Query: ", sql_query)
     sql_query_result = _do_query_sql_database(sql_query)
 

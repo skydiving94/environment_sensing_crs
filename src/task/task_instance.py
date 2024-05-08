@@ -65,9 +65,12 @@ class TaskInstance:
                 return {}
             info_spec = self.output_information_spec[key]
             raw_value = response_data[key]
-            informations[key] = Information(
+
+            # Append the task name to the front of the action output.
+            key_with_task_name = f'task_{self.name}_output:{key}'
+            informations[key_with_task_name] = Information(
                 raw_value,
-                key,
+                key_with_task_name,
                 info_spec['information_type'],
                 info_spec)
         return informations

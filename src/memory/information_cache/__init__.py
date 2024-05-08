@@ -1,12 +1,13 @@
 import datetime
 from abc import ABC, abstractmethod
-from typing import Set, Dict, List
+from typing import Set, Dict, List, Optional
 
 from src.memory.activity_log import ActivityLog
 from src.memory.information import Information
 from src.memory.information_relation import InformationRelation
 from src.task.task_spec import TaskSpec
 from src.utils.collection_utils import stringify_collection_as_unordered_list
+from src.utils.general_utils import find_latest_information_with_substring
 
 
 class InformationCache(ABC):
@@ -69,6 +70,22 @@ class InformationCache(ABC):
         """
         information_list = self.get_information_by_name(information_name)
         return information_list[-1]
+
+    def get_most_recent_information_name_containing_substring(
+        self,
+        information_name_substring
+    ) -> Optional[str]:
+        return find_latest_information_with_substring(
+            self.get_information_names(),
+            information_name_substring
+        )
+
+    def get_most_recent_information_by_substring(self, information_name_substring) -> Information:
+        most_recent_information_name = self.get_most_recent_information_name_containing_substring(
+            information_name_substring
+        )
+        assert most_recent_information_name is not None
+        return self.get_top_information_by_name(most_recent_information_name)
 
     def get_informations(self) -> Dict[str, List[Information]]:
         return self._informations
