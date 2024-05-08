@@ -2,7 +2,7 @@ from src.memory.information_cache import InformationCache
 from src.task.task_spec import TaskSpec
 
 
-class ChatBasedTaskAgnosticInformationCache(InformationCache):
+class LogBasedTaskAgnosticInformationCache(InformationCache):
     def __init__(self):
         super().__init__()
 

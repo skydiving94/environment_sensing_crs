@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 from src.agent.agent import Agent
 from src.environment.environment import Environment
 from src.memory.information_cache import InformationCache
-from src.memory.information_cache.chat_based_task_agnostic_information_cache import \
-    ChatBasedTaskAgnosticInformationCache
+from src.memory.information_cache.log_based_task_agnostic_information_cache import \
+    LogBasedTaskAgnosticInformationCache
 
 load_dotenv()
 
@@ -24,7 +24,7 @@ class AgentFactory:
         each agent one by one.
 
     Two types of agents are supported at the moment:
-    - chat_based_agent
+    - log_based_agent
     - knowledge_based_agent
     """
 
@@ -67,7 +67,7 @@ class AgentFactory:
         #     current_objective
         # )
 
-    def create_chat_based_agent(
+    def create_log_based_agent(
         self,
         agent_id: str,
         role_description: str,
@@ -76,8 +76,8 @@ class AgentFactory:
         return self._create_agent(
             agent_id,
             role_description,
-            os.path.join(self._resource_root_path, 'chat_based_agent'),
-            ChatBasedTaskAgnosticInformationCache(),
+            os.path.join(self._resource_root_path, 'log_based_agent'),
+            LogBasedTaskAgnosticInformationCache(),
             current_objective
         )
 
