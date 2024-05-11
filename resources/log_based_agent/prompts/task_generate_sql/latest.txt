@@ -3,9 +3,12 @@ Format your response as a json with 'sql_query' and 'reasoning'.
 The sql_query is one line query on sqlite database.
 The returned json string must be parsable by json.loads().
 
-All of the activity logs are listed below.
+All of the activity logs for the current session are listed below.
 These include input from users, intermediary task results, and responses made.
 {relevant_information}
+
+These are all activity logs from the previous sessions.
+{past_information}
 The sql query should be formulated to address user's request.
 
 List of available tables:

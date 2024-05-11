@@ -1,6 +1,9 @@
-All of the activity logs are listed below.
+All of the activity logs for the current session are listed below.
 These include input from users, intermediary task results, and responses made.
 {relevant_information}
+
+These are all activity logs from the previous sessions.
+{past_information}
 
 You need to pick a task from the following list.
 

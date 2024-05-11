@@ -29,9 +29,15 @@ class InformationCache(ABC):
     _neighbors: Dict[InformationRelation, Set['InformationCache']]
 
     def __init__(self):
+        self.initialize()
+
+    def initialize(self):
         self._informations = dict()
         self._neighbors = dict()
         self._activity_logs = []
+
+    def reset(self):
+        self.initialize()
 
     def add_information(self, information: Information):
         information_name = information.name
@@ -103,3 +109,8 @@ class InformationCache(ABC):
         :param task_spec: The description of the current task to execute.
         :return: a formatted string containing required information to be inserted into prompt.
         """
+        pass
+
+    @abstractmethod
+    def __str__(self):
+        pass

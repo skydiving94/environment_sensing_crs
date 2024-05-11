@@ -2,9 +2,12 @@ Now that it is time to formulate a response which is to be returned to the user,
 the aim of this task is to utilize all collected information to generate a text
 that best addresses user's need.
 
-All of the activity logs are listed below.
+All of the activity logs for the current session are listed below.
 These include input from users, intermediary task results, and responses made.
 {relevant_information}
+
+These are all activity logs from the previous sessions.
+{past_information}
 
 The returned content must be parsable using json.loads.
 

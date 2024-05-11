@@ -8,6 +8,8 @@ from src.environment.environment import Environment
 from src.memory.information_cache import InformationCache
 from src.memory.information_cache.log_based_task_agnostic_information_cache import \
     LogBasedTaskAgnosticInformationCache
+from src.memory.long_term_memory import LongTermMemory
+from src.memory.long_term_memory.sequential_long_term_memory import SequentialLongTermMemory
 
 load_dotenv()
 
@@ -78,6 +80,7 @@ class AgentFactory:
             role_description,
             os.path.join(self._resource_root_path, 'log_based_agent'),
             LogBasedTaskAgnosticInformationCache(),
+            SequentialLongTermMemory(),
             current_objective
         )
 
@@ -87,6 +90,7 @@ class AgentFactory:
         role_description: str,
         resource_root_path: str,
         information_cache: InformationCache,
+        long_term_memory: LongTermMemory,
         current_objective: Optional[str] = None
     ):
         return Agent(
@@ -94,6 +98,7 @@ class AgentFactory:
             role_description,
             resource_root_path,
             information_cache,
+            long_term_memory,
             self._environment,
             self._in_information_queue_names,
             self._out_information_queue_names,

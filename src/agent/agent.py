@@ -12,6 +12,7 @@ from src.environment.environment import Environment
 from src.llm import get_llm_instance
 from src.memory.information import Information
 from src.memory.information_cache import InformationCache
+from src.memory.long_term_memory import LongTermMemory
 from src.task import get_stringified_all_available_task_name_description_pairs, \
     get_task_spec_path_by_name
 from src.task.task_spec import TaskSpec
@@ -31,6 +32,7 @@ USER_INPUT_INFO_QUEUE_NAME = 'user_input'
 ALL_POSSIBLE_TASKS = 'all_possible_tasks'
 EXECUTED_TASKS = 'executed_tasks'
 RELEVANT_INFORMATION = 'relevant_information'
+PAST_INFORMATION = 'past_information'
 
 SPECIAL_INFORMATION_NAME_KEYS = [
     AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE,
@@ -39,7 +41,9 @@ SPECIAL_INFORMATION_NAME_KEYS = [
     ALL_POSSIBLE_TASKS,
     EXECUTED_TASKS,
     RELEVANT_INFORMATION,
+    PAST_INFORMATION,
 ]
+
 MAX_DEPTH = 3
 RESPONSE_INFO_KEY = 'response'
 
@@ -56,6 +60,7 @@ class Agent:
     _resource_root_path: str
     _task_specs: List[TaskSpec]
     _llm_instance: BaseChatModel
+    _is_verbose: bool = False
 
     """
     Useful data for making decisions.
@@ -65,6 +70,8 @@ class Agent:
     _task_history: List[str]
     # A collection of information to be processed at once.
     _information_cache: InformationCache
+    # A collection of information caches as short term memories.
+    _long_term_memory: LongTermMemory
 
     _interaction_history: List[InteractionHistory]
 
@@ -93,11 +100,13 @@ class Agent:
         role_description: str,
         resource_root_path: str,
         information_cache: InformationCache,
+        long_term_memory: LongTermMemory,
         environment: Optional[Environment] = None,
         in_information_queue_names: Optional[List[str]] = None,
         out_information_queue_names: Optional[List[str]] = None,
         llm_provider: str = 'openai',
-        current_objective: Optional[str] = None
+        current_objective: Optional[str] = None,
+        is_verbose: bool = False,
     ):
         """
         An agent can perform a variety of tasks.
@@ -127,6 +136,9 @@ class Agent:
             self._current_objective = [current_objective]
         else:
             self._current_objective = []
+
+        self._is_verbose = is_verbose
+
         self._task_history = []
 
         self.register_environment(environment)
@@ -141,13 +153,14 @@ class Agent:
         self._in_information_queues[USER_INPUT_INFO_QUEUE_NAME] = deque()
 
         self._information_cache = information_cache
+        self._long_term_memory = long_term_memory
         self._is_process_finished = False
 
         # TODO: Finish initializing all other fields!
 
         self._stop_event = threading.Event()
         self._pause_event = threading.Event()
-        self._monitor_thread = threading.Thread(target=self._monitor)
+
         self._start_monitor_thread()
         pass
 
@@ -170,8 +183,9 @@ class Agent:
         user_input_queue = self._in_information_queues[USER_INPUT_INFO_QUEUE_NAME]
         if user_input_queue is not None:
             user_input_queue.append(Information(input_message, name=USER_INPUT_INFO_QUEUE_NAME))
-            print("Current", user_input_queue)
-            print(self._in_information_queues[USER_INPUT_INFO_QUEUE_NAME])
+            if self._is_verbose:
+                print("Current", user_input_queue)
+                print(self._in_information_queues[USER_INPUT_INFO_QUEUE_NAME])
 
     def see(self, environment_image_path: str):
         """
@@ -232,7 +246,8 @@ class Agent:
             for information_name in list(self._in_information_queues.keys()):
                 if len(self._in_information_queues[information_name]) > 0:
                     information = self._in_information_queues[information_name].popleft()
-                    print(f'New information found in {information_name}: {information.value}')
+                    if self._is_verbose:
+                        print(f'New information found in {information_name}: {information.value}')
 
                     # Add the new information to the info cache.
                     self._information_cache.add_information(information)
@@ -253,29 +268,33 @@ class Agent:
         :return:
         """
         if depth >= MAX_DEPTH:
-            print('Hmm. There seems to be something wrong with your request. Please try again.')
+            if self._is_verbose:
+                print('Hmm. There seems to be something wrong with your request. Please try again.')
             self._is_process_finished = True
             return
-        print(f'Processing information: {information.value} at depth {depth}')
+        if self._is_verbose:
+            print(f'Processing information: {information.value} at depth {depth}')
         self._pause_monitor_thread()
 
         # Step 1. Given the latest information passed to process and existing information
         # in the information cache, it first picks a task.
         task_spec_for_picked_task = self._pick_a_task()
 
-        print("task_spec_for_picked_task returns", task_spec_for_picked_task)
+        if self._is_verbose:
+            print("task_spec_for_picked_task returns", task_spec_for_picked_task)
 
         if task_spec_for_picked_task is None:
             self._process(information, depth + 1)
 
         # Step 2. Execute the task given the spec.
         task_output = self._execute_a_task(task_spec_for_picked_task)  # type: ignore
-        print(f'task_output from processing at depth {depth}: {task_output}')
+        if self._is_verbose:
+            print(f'task_output from processing at depth {depth}: {task_output}')
         # task_output may have some more meaningful use.
 
         # Step 3. Check if more processing is needed.
         if self._is_process_finished:
-            self._clear_objective()
+            self._reset()
             self._resume_monitor_thread()
             return
         else:
@@ -298,8 +317,9 @@ class Agent:
             return None
         task_name = result['task_pick_a_task_output:task_name'].value
         reasoning = result['task_pick_a_task_output:reasoning'].value
-        print(f'Task picked: {task_name}')
-        print(f'Reasoning: {reasoning}')
+        if self._is_verbose:
+            print(f'Task picked: {task_name}')
+            print(f'Reasoning: {reasoning}')
         return TaskSpec(
             self._task_specs_root_path,
             self._prompts_root_path,
@@ -318,7 +338,8 @@ class Agent:
         # Step 0. Check if it belongs to one of the hard-coded actions such as _talk, etc.
         # TODO: Implement this logic later.
         task_name = task_spec.name
-        print(f'Executing task: {task_name}')
+        if self._is_verbose:
+            print(f'Executing task: {task_name}')
 
         # Step 1. Build arg_key_to_arg_val based on input information names and the available
         # data the agent has.
@@ -326,7 +347,7 @@ class Agent:
 
         # Step 2. Execute all actions for the task.
         action_names = task_spec.action_names
-        action_output = self._execute_actions(action_names, arg_key_to_arg_val)
+        action_output = self._execute_actions(action_names, arg_key_to_arg_val, self._is_verbose)
 
         # Step 3. Build prompt_key_to_val based on current information stored.
         informations = {}
@@ -353,9 +374,11 @@ class Agent:
             informations.update(task_instance.trigger(self._llm_instance))
 
         # Step 5. Add all information from action execution and llm task to the info cache.
-        print(f'Saving the following information to cache...')
+        if self._is_verbose:
+            print(f'Saving the following information to cache...')
         for information_name, information in informations.items():
-            print(f'{information}')
+            if self._is_verbose:
+                print(f'{information}')
             self._information_cache.add_information(information)
 
         # Step 6. If there is next_task, execute the next task.
@@ -368,14 +391,15 @@ class Agent:
 
         # Step 7. Check if this task is a terminating task. i.e. no more processing is needed.
         self._is_process_finished = task_spec.is_terminating_task or self._is_process_finished
-        print(f'Is process {threading.current_thread().ident} | '
-              f'task_name {task_spec.name} finished? {self._is_process_finished}')
+        if self._is_verbose:
+            print(f'Is process {threading.current_thread().ident} | '
+                  f'task_name {task_spec.name} finished? {self._is_process_finished}')
 
         self._task_history.append(task_spec.name)
         return informations
 
     @staticmethod
-    def _execute_actions(action_names: List[str], arg_key_to_arg_val: Dict) -> Optional[Dict]:
+    def _execute_actions(action_names: List[str], arg_key_to_arg_val: Dict, is_verbose: bool) -> Optional[Dict]:
         """
         Execute a pipeline of actions given the initial arg_key_to_arg_val.
         """
@@ -383,7 +407,8 @@ class Agent:
         if len(action_names) == 0:
             return None
 
-        print(f'Executing a pipeline of actions: {action_names}')
+        if is_verbose:
+            print(f'Executing a pipeline of actions: {action_names}')
         available_action_data = get_all_available_action_data()
         action_output: Optional[Dict] = arg_key_to_arg_val
         are_actions_interrupted = False
@@ -434,15 +459,15 @@ class Agent:
         if out_information_queue is not None:
             out_information_queue.append(Information(out_message))
         else:
-            print('No output information queue is set up.')
+            if self._is_verbose:
+                print('No output information queue is set up.')
 
-    def _clear_objective(self):
+    def _reset(self):
         self._current_objective = []
         self._task_history = []
 
-        # TODO: In the future, consider saving the short-term info cache
-        #  to a long-term info storage.
-        #  Until then, information_cache will serve as the long-term storage.
+        self._long_term_memory.add_short_term_memory(self._information_cache)
+        self._information_cache.reset()
 
         # TODO: Also, reset the priorities for all information sources to default value.
 
@@ -470,6 +495,7 @@ class Agent:
                 self._current_objective[0] if len(self._current_objective) > 0 else 'None',
                 task_spec,
             ),
+            PAST_INFORMATION: self._long_term_memory.retrieve_all_information_as_text(),
         }
 
     def _build_arg_key_to_arg_val(self, task_spec: TaskSpec) -> Dict[str, Any]:
@@ -502,14 +528,16 @@ class Agent:
         return prompt_key_to_val
 
     def _start_monitor_thread(self):
+        self._monitor_thread = threading.Thread(target=self._monitor)
         self._monitor_thread.start()
         self._pause_event.set()
 
     def _stop_monitor_thread(self):
         self._stop_event.set()
-        self._resume_monitor_thread()
+        # self._resume_monitor_thread()
         self._monitor_thread.join()
-        print(f'Stopped monitor thread for agent {id(self)}...')
+        if self._is_verbose:
+            print(f'Stopped monitor thread for agent {id(self)}...')
 
     def _pause_monitor_thread(self):
         self._pause_event.clear()
