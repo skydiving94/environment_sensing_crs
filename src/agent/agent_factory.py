@@ -73,7 +73,8 @@ class AgentFactory:
         self,
         agent_id: str,
         role_description: str,
-        current_objective: Optional[str] = None
+        current_objective: Optional[str] = None,
+        is_verbose: bool = False,
     ):
         return self._create_agent(
             agent_id,
@@ -81,7 +82,8 @@ class AgentFactory:
             os.path.join(self._resource_root_path, 'log_based_agent'),
             LogBasedTaskAgnosticInformationCache(),
             SequentialLongTermMemory(),
-            current_objective
+            current_objective,
+            is_verbose
         )
 
     def _create_agent(
@@ -91,7 +93,8 @@ class AgentFactory:
         resource_root_path: str,
         information_cache: InformationCache,
         long_term_memory: LongTermMemory,
-        current_objective: Optional[str] = None
+        current_objective: Optional[str] = None,
+        is_verbose: bool = False
     ):
         return Agent(
             agent_id,
@@ -103,5 +106,6 @@ class AgentFactory:
             self._in_information_queue_names,
             self._out_information_queue_names,
             self._llm_provider,
-            current_objective
+            current_objective,
+            is_verbose
         )

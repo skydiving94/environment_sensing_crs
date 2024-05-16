@@ -45,9 +45,10 @@ def _do_query_sql_database(sql_query: str) -> str:
     # TODO: Build an interface class "ToolBox" which an agent can use to employ different
     #   outside tools such as db connector.
     db_path = os.getenv('MOVIELENS_DB_PATH', default='')
-    print("Read db from:", db_path)
+    print("Querying from db:", db_path)
     conn = sqlite3.connect(db_path)
     query_result = pd.read_sql_query(sql_query, conn)
+    print("Finished querying from:", db_path)
     return json.dumps(query_result.to_json())
 
     # FIXME: Remove after finishing debugging!

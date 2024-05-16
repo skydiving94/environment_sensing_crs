@@ -10,7 +10,9 @@ def main():
     print('Creating an agent: chitchat_agent')
     agent_factory = AgentFactory()
     agent = agent_factory.create_log_based_agent(
-        'chitchat_agent', 'You are an agent for chitchatting with'
+        'chitchat_agent',
+        'You are an agent for chitchatting with',
+        is_verbose=False
     )
 
     print('Registering chitchat_agent to env')

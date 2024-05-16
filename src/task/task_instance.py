@@ -55,7 +55,8 @@ class TaskInstance:
                 print("Parsing Json Error", response.content, "Exception:", e)
                 if not error_message_added:
                     self.task_prompt += (
-                        '\nJSON string is not parsable, '
+                        '\nERROR: The previous output is not parsable!!!! '
+                        'Make sure the output string can be properly parsed!!!'
                         f'please correct it according following message: {e}')
                     error_message_added = True
             

@@ -469,6 +469,8 @@ class Agent:
         self._long_term_memory.add_short_term_memory(self._information_cache)
         self._information_cache.reset()
 
+        self._is_process_finished = False
+
         # TODO: Also, reset the priorities for all information sources to default value.
 
     # A placeholder for a future action which allows an agent to define and name its own action
