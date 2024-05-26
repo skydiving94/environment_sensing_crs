@@ -7,13 +7,15 @@ def main():
     env = Environment()
     print(str(env))
 
-    print('Creating an agent: test_agent')
+    print('Creating an agent: chitchat_agent')
     agent_factory = AgentFactory()
     agent = agent_factory.create_log_based_agent(
-        'test_agent', 'You are a test agent'
+        'chitchat_agent',
+        'You are an agent for chitchatting with',
+        is_verbose=False
     )
 
-    print('Registering test_agent to env')
+    print('Registering chitchat_agent to env')
     agent.register_environment(env)
     print(str(env))
 
@@ -23,7 +25,12 @@ def main():
 
     print(env.get_all_agent_status())
 
-    agent.listen('Hello World!')
+    try:
+        while True:
+            user_input = input()
+            agent.listen(user_input)
+    except KeyboardInterrupt:
+        exit()
 
 
 if __name__ == '__main__':

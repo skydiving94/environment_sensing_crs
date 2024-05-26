@@ -3,7 +3,7 @@ from typing import Dict
 
 from langchain_core.language_models import BaseChatModel
 
-from src.information_cache.information import Information
+from src.memory.information import Information
 from src.utils.typed_dicts.information_spec import InformationSpec
 
 
@@ -55,7 +55,8 @@ class TaskInstance:
                 print("Parsing Json Error", response.content, "Exception:", e)
                 if not error_message_added:
                     self.task_prompt += (
-                        '\nJSON string is not parsable, '
+                        '\nERROR: The previous output is not parsable!!!! '
+                        'Make sure the output string can be properly parsed!!!'
                         f'please correct it according following message: {e}')
                     error_message_added = True
             
@@ -65,9 +66,12 @@ class TaskInstance:
                 return {}
             info_spec = self.output_information_spec[key]
             raw_value = response_data[key]
-            informations[key] = Information(
+
+            # Append the task name to the front of the action output.
+            key_with_task_name = f'task_{self.name}_output:{key}'
+            informations[key_with_task_name] = Information(
                 raw_value,
-                key,
+                key_with_task_name,
                 info_spec['information_type'],
                 info_spec)
         return informations

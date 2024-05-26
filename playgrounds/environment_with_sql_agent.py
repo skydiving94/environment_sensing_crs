@@ -11,7 +11,7 @@ def main():
 
     # Create a SQL Agent handling users request
     agent_factory = AgentFactory()
-    sql_agent = agent_factory.create_knowledge_based_agent(
+    sql_agent = agent_factory.create_log_based_agent(
         agent_id='sql_agent',
         role_description='You are a SQL agent writing and executing SQL queries.',
         current_objective='Write and execute SQL queries.')

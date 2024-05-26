@@ -1,0 +1,12 @@
+All of the activity logs for the current session are listed below.
+These include input from users, intermediary task results, and responses made.
+{relevant_information}
+
+These are all activity logs from the previous sessions.
+{past_information}
+
+Decide which information queue can provide information
+that helps to address users' need.
+
+Below is a list names of all available information sources.
+{information_queue_names}

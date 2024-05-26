@@ -2,7 +2,7 @@ import threading
 from collections import deque
 from typing import List, Dict, Optional, Set
 
-from src.information_cache.information import Information
+from src.memory.information import Information
 from src.utils.environment_utils import get_agent_output_information_name
 
 
@@ -90,11 +90,13 @@ Information Sources: {list(self._information_sources.keys())}
         while not self._stop_event.is_set():
             for agent_id in set(self._agent_ids):
                 information_name = get_agent_output_information_name(agent_id)
-                # TODO: How do you know information_name is in self._information_sources? 
+                # TODO: How do you know information_name is in self._information_sources?
                 if information_name in self._information_sources.keys():
                     while len(self._information_sources[information_name]) > 0:
-                        print(f'Agent {agent_id}: '
-                              f'{self._information_sources[information_name][0].value}')
+                        print(
+                            f'Agent {agent_id}: '
+                            f'{self._information_sources[information_name][0].value}'
+                            )
                         self._information_sources[information_name].popleft()
                 else:
                     print(information_name, "not in self._information_sources.keys()")

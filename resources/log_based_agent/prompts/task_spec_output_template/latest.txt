@@ -1,0 +1,12 @@
+The output must follow the following format in PLAIN UNFORMATTED text:
+The output must follow the following format in PLAIN UNFORMATTED text:
+The output must follow the following format in PLAIN UNFORMATTED text:
+{output_format}
+THE OUTPUT STRING MUST BE DIRECTLY PARSABLE USING json.loads in Python or JSON.parse in JavaScript!
+THE OUTPUT STRING MUST BE DIRECTLY PARSABLE USING json.loads in Python or JSON.parse in JavaScript!
+
+DO NOT PRODUCE ANY OUTPUT IN MARKDOWN!!
+DO NOT PRODUCE ANY OUTPUT IN MARKDOWN!!
+DO NOT PRODUCE ANY OUTPUT IN MARKDOWN!!
+DO NOT PRODUCE ANY OUTPUT IN MARKDOWN!!
+DO NOT PRODUCE ANY OUTPUT IN MARKDOWN!!

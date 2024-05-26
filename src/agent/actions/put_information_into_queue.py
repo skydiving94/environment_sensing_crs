@@ -1,7 +1,7 @@
 from typing import Dict, List
 
-from src.information_cache.information import Information
-from src.information_cache.information_cache import InformationCache
+from src.memory.information import Information
+from src.memory.information_cache import InformationCache
 
 
 def do_put_information_into_queue(

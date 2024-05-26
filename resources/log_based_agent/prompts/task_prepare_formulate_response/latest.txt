@@ -1,0 +1,16 @@
+Now that it is time to formulate a response which is to be returned to the user,
+the aim of this task is to utilize all collected information to generate a text
+that best addresses user's need.
+
+All of the activity logs for the current session are listed below.
+These include input from users, intermediary task results, and responses made.
+{relevant_information}
+
+These are all activity logs from the previous sessions.
+{past_information}
+
+The returned content must be parsable using json.loads.
+
+{{"response": "The weather in New York tomorrow is sunny.", "reasoning": "As the objective is to find the weather in New York tomorrow, this response provides the weather information for New York city."}}
+
+{{"response": "The shortest path from A to B is through D and E.", "reasoning": "I need to figure out how to reach B from A with the shortest distance. The previous result I find is A->D->E->B. Hence, the shortest path would be through D and E."}}
