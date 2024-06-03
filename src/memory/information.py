@@ -97,25 +97,28 @@ class Information:
         """
         Given a raw _value and its type, parse it to its appropriate type.
         """
-
-        _raw_value = str(_raw_value)
-        match _information_type:
-            case InformationType.STRING:
-                return _raw_value
-            case InformationType.BOOLEAN:
-                return self._parse_bool(_raw_value)
-            case InformationType.INTEGER:
-                return int(_raw_value)
-            case InformationType.FLOAT:
-                return float(_raw_value)
-            case InformationType.ARRAY:
-                return self._parse_array(_raw_value, _information_spec)
-            case InformationType.TUPLE:
-                return self._parse_tuple(_raw_value, _information_spec)
-            case InformationType.OBJECT:
-                return self._parse_object(_raw_value, _information_spec)
-            case _:
-                raise TypeError
+        try:
+            _raw_value = str(_raw_value)
+            match _information_type:
+                case InformationType.STRING:
+                    return _raw_value
+                case InformationType.BOOLEAN:
+                    return self._parse_bool(_raw_value)
+                case InformationType.INTEGER:
+                    return int(_raw_value)
+                case InformationType.FLOAT:
+                    return float(_raw_value)
+                case InformationType.ARRAY:
+                    return self._parse_array(_raw_value, _information_spec)
+                case InformationType.TUPLE:
+                    return self._parse_tuple(_raw_value, _information_spec)
+                case InformationType.OBJECT:
+                    return self._parse_object(_raw_value, _information_spec)
+                case _:
+                    raise TypeError
+        except Exception as e:
+            # Raise ValueError if the _raw_value cannot be parsed.
+            raise ValueError(f'Failed to parse the raw value: {_raw_value} with type: {_information_type}') from e            
 
     def _parse_bool(self, _raw_value: str) -> str | bool:
         _raw_value = _raw_value.lower()
@@ -134,7 +137,6 @@ class Information:
         if _information_spec is None:
             self._is_value_parsed = False
             return _raw_value
-
         return json.loads(_raw_value.replace('\'', '"'))
 
     def _parse_tuple(self, _raw_value: str, _information_spec: Optional[InformationSpec]) -> List:
