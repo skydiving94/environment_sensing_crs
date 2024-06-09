@@ -75,6 +75,7 @@ class AgentFactory:
         role_description: str,
         current_objective: Optional[str] = None,
         is_verbose: bool = False,
+        should_output_json: bool = False,
     ):
         return self._create_agent(
             agent_id,
@@ -83,7 +84,8 @@ class AgentFactory:
             LogBasedTaskAgnosticInformationCache(),
             SequentialLongTermMemory(),
             current_objective,
-            is_verbose
+            is_verbose,
+            should_output_json
         )
 
     def _create_agent(
@@ -94,7 +96,8 @@ class AgentFactory:
         information_cache: InformationCache,
         long_term_memory: LongTermMemory,
         current_objective: Optional[str] = None,
-        is_verbose: bool = False
+        is_verbose: bool = False,
+        should_output_json: bool = False
     ):
         return Agent(
             agent_id,
@@ -107,5 +110,6 @@ class AgentFactory:
             self._out_information_queue_names,
             self._llm_provider,
             current_objective,
-            is_verbose
+            is_verbose,
+            should_output_json
         )

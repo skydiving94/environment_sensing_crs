@@ -1,5 +1,6 @@
 import json
 import os.path
+from copy import deepcopy
 from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
@@ -33,8 +34,7 @@ class TaskSpec:
     input_information_names: List[str]
 
     # Names and types of the information produced by the task
-    output_information_spec: Dict[str, InformationSpec]
-    output_information_spec_str: str
+    parsed_output_information_spec: Dict[str, InformationSpec]
 
     # The action pipeline.
     action_names: List[str]
@@ -82,9 +82,10 @@ class TaskSpec:
             task_spec_dict['input_information_names']
             if 'input_information_names' in task_spec_dict
             else [])
-        self.output_information_spec = \
+
+        self.output_information_spec = output_information_spec
+        self.parsed_output_information_spec = \
             {k: parse_information_spec(v) for k, v in output_information_spec.items()}
-        self.output_information_spec_str = json.dumps(output_information_spec)
         self.action_names = (
             task_spec_dict['action_names'] if 'action_names' in task_spec_dict else [])
         self.temperature = task_spec_dict['temperature'] \
@@ -112,9 +113,18 @@ class TaskSpec:
 
     def build_task_instance(
             self,
-            prompt_key_to_val: Dict[str, str]) -> TaskInstance:
+            prompt_key_to_val: Dict[str, str],
+            should_output_json: bool = False) -> TaskInstance:
         system_prompt = replace_all_keys_in_prompt_template(self.system_prompt_template,
                                                             prompt_key_to_val)
+
+        output_information_spec = deepcopy(self.output_information_spec)
+        if should_output_json and self.is_terminating_task:
+            output_information_spec['json_output'] = {
+                'information_type': 'string',
+                'description': 'This is a json object containing raw, structured information for the task.',
+            }
+
         task_prompt = \
             (replace_all_keys_in_prompt_template(self.task_prompt_template,
                                                  prompt_key_to_val)
@@ -122,13 +132,20 @@ class TaskSpec:
              + "\n"
              + replace_all_keys_in_prompt_template(
                     self.prompt_template_for_task_spec_output,
-                    {'output_format': self.output_information_spec_str}
+                    {'output_format': json.dumps(output_information_spec)}
                 ))
+        if should_output_json and self.is_terminating_task:
+            task_prompt += (
+                '\nThe output of this task should include a JSON object titled "json_output".\n'
+                'It contains raw, structured information used for this task. '
+                'The string must be parsable using json.loads'
+            )
+
         return TaskInstance(name=self.name,
                             system_prompt=system_prompt,
                             task_prompt=task_prompt,
                             temperature=self.temperature,
-                            output_information_spec=self.output_information_spec)
+                            output_information_spec=self.parsed_output_information_spec)
 
     @staticmethod
     def _load_task_spec_dict(task_spec_path, task_spec_str, task_specs_root_path):

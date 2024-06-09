@@ -46,6 +46,7 @@ SPECIAL_INFORMATION_NAME_KEYS = [
 
 MAX_DEPTH = 3
 RESPONSE_INFO_KEY = 'response'
+JSON_OUTPUT_KEY = 'json_output'
 
 
 class Agent:
@@ -61,6 +62,7 @@ class Agent:
     _task_specs: List[TaskSpec]
     _llm_instance: BaseChatModel
     _is_verbose: bool = False
+    _should_output_json: bool = False
 
     """
     Useful data for making decisions.
@@ -107,6 +109,7 @@ class Agent:
         llm_provider: str = 'openai',
         current_objective: Optional[str] = None,
         is_verbose: bool = False,
+        should_output_json: bool = False,
     ):
         """
         An agent can perform a variety of tasks.
@@ -138,6 +141,7 @@ class Agent:
             self._current_objective = []
 
         self._is_verbose = is_verbose
+        self._should_output_json = should_output_json
 
         self._task_history = []
 
@@ -370,10 +374,11 @@ class Agent:
         # Step 4. Get an instance of the task given the contextual information the agent
         # current has, including the result of the action taken.
         if task_spec.is_llm_task:
-            task_instance = task_spec.build_task_instance(prompt_key_to_val)
+            task_instance = task_spec.build_task_instance(prompt_key_to_val, self._should_output_json)
 
             # Step 4.1. Trigger the task instance by invoking the llm instance.
-            informations.update(task_instance.trigger(self._llm_instance))
+            task_output = task_instance.trigger(self._llm_instance)
+            informations.update(task_output)
 
         # Step 5. Add all information from action execution and llm task to the info cache.
         if self._is_verbose:
@@ -390,6 +395,8 @@ class Agent:
             informations.update(task_output)
         if task_spec.is_response_generating_task:
             self._talk(self._information_cache.get_most_recent_information_by_substring(RESPONSE_INFO_KEY).value)
+            if self._should_output_json:
+                self._talk(self._information_cache.get_most_recent_information_by_substring(JSON_OUTPUT_KEY).value)
 
         # Step 7. Check if this task is a terminating task. i.e. no more processing is needed.
         self._is_process_finished = task_spec.is_terminating_task or self._is_process_finished

@@ -4,7 +4,8 @@ from typing import Dict
 from langchain_core.language_models import BaseChatModel
 
 from src.memory.information import Information
-from src.utils.typed_dicts.information_spec import InformationSpec
+from src.utils.enums.information_type import InformationType
+from src.utils.typed_dicts.information_spec import InformationSpec, GenericInformationSpec
 
 
 class TaskInstance:
@@ -62,9 +63,12 @@ class TaskInstance:
             
         informations = dict()
         for key in response_data.keys():
-            if key not in self.output_information_spec.keys():
+            if key not in self.output_information_spec.keys() and key != 'json_output':
                 return {}
-            info_spec = self.output_information_spec[key]
+            if key == 'json_output':
+                info_spec = GenericInformationSpec(information_type=InformationType.STRING)
+            else:
+                info_spec = self.output_information_spec[key]
             raw_value = response_data[key]
 
             # Append the task name to the front of the action output.
