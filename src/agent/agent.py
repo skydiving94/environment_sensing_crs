@@ -268,6 +268,8 @@ class Agent:
         :return:
         """
         if depth >= MAX_DEPTH:
+            # TODO: Use self._current_objective to decide the proper action when max_depth/max_round
+            #  has been reached.
             if self._is_verbose:
                 print('Hmm. There seems to be something wrong with your request. Please try again.')
             self._is_process_finished = True
