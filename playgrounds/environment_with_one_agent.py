@@ -10,7 +10,10 @@ def main():
     print('Creating an agent: test_agent')
     agent_factory = AgentFactory()
     agent = agent_factory.create_log_based_agent(
-        'test_agent', 'You are a test agent'
+        'test_agent',
+        'You are a test agent',
+        should_output_json=True
+
     )
 
     print('Registering test_agent to env')
