@@ -32,6 +32,13 @@ def get_all_available_task_name_description_pairs() -> List[Tuple[str, str]]:
     # FIXME: Implement the actual functionality so it can load dynamically!
     # Maybe we can read from task_specs:description?
     task_name_description_pairs: List[Tuple[str, str]] = [
+        # FIXME: Remove determine_user_disposition and pick_a_task, which are predefined
+        #   for an agent, irrelevant to the actual need of a user. That is, these tasks are
+        #   a priori to any user interactions.
+        (
+            'determine_user_disposition',
+            'The agent should determine if the user is satisfied with its response',
+        ),
         (
             'pick_a_task',
             'The agent should decide which task it should execute given existing information.'

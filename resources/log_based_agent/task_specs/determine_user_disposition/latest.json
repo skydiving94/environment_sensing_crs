@@ -1,0 +1,17 @@
+{
+  "name": "determine_user_disposition",
+  "description": "The agent should determine if the user is satisfied with its response",
+  "system_prompt_template": "",
+  "task_prompt_template": "TASK_PROMPT_TEMPLATE_FOR_DETERMINE_USER_DISPOSITION",
+  "input_information_names": [],
+  "output_information_spec": {
+    "disposition": {
+      "information_type": "string"
+    },
+    "reasoning": {
+      "information_type": "string"
+    }
+  },
+  "action_names": [],
+  "temperature": 0.2
+}
