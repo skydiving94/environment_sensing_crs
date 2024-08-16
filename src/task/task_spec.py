@@ -61,6 +61,7 @@ class TaskSpec:
         prompts_root_path: str,
         task_spec_str: Optional[str] = None,
         task_spec_path: Optional[str] = None,
+        task_prompt_injection: Optional[str] = None,
     ):
         self.task_specs_root_path = task_specs_root_path
         self.prompts_root_path = prompts_root_path
@@ -77,6 +78,9 @@ class TaskSpec:
             self._load_prompt_template(task_spec_dict['system_prompt_template']))
         self.task_prompt_template = (
             self._load_prompt_template(task_spec_dict['task_prompt_template']))
+
+        if task_prompt_injection is not None:
+            self.task_prompt_template = f'{task_prompt_injection}\n{self.task_prompt_template}'
 
         self.input_information_names = (
             task_spec_dict['input_information_names']

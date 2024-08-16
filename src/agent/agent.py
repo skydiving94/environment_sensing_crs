@@ -61,9 +61,10 @@ class Agent:
     _task_specs: List[TaskSpec]
     _llm_instance: BaseChatModel
     _is_verbose: bool = False
+    _max_round: int = 5
 
     """
-    Useful data for making decisions.
+    The current state of the agent.
     """
     _current_objective: List[str]
     # A list of task names being already executed for this objective.
@@ -76,6 +77,8 @@ class Agent:
     _interaction_history: List[InteractionHistory]
 
     _is_process_finished: bool
+
+    _num_rounds: int = 0
     # TODO: We need to decide if we should just use a regular queue or a priority queue.
 
     _environment: Optional[Environment]
@@ -95,18 +98,19 @@ class Agent:
     """
 
     def __init__(
-        self,
-        agent_id: str,
-        role_description: str,
-        resource_root_path: str,
-        information_cache: InformationCache,
-        long_term_memory: LongTermMemory,
-        environment: Optional[Environment] = None,
-        in_information_queue_names: Optional[List[str]] = None,
-        out_information_queue_names: Optional[List[str]] = None,
-        llm_provider: str = 'openai',
-        current_objective: Optional[str] = None,
-        is_verbose: bool = False,
+            self,
+            agent_id: str,
+            role_description: str,
+            resource_root_path: str,
+            information_cache: InformationCache,
+            long_term_memory: LongTermMemory,
+            environment: Optional[Environment] = None,
+            in_information_queue_names: Optional[List[str]] = None,
+            out_information_queue_names: Optional[List[str]] = None,
+            llm_provider: str = 'openai',
+            current_objective: Optional[str] = None,
+            is_verbose: bool = False,
+            max_round: int = 5,
     ):
         """
         An agent can perform a variety of tasks.
@@ -138,6 +142,7 @@ class Agent:
             self._current_objective = []
 
         self._is_verbose = is_verbose
+        self._max_round = max_round
 
         self._task_history = []
 
@@ -155,6 +160,7 @@ class Agent:
         self._information_cache = information_cache
         self._long_term_memory = long_term_memory
         self._is_process_finished = False
+        self._num_rounds = 0
 
         # TODO: Finish initializing all other fields!
 
@@ -276,6 +282,16 @@ class Agent:
             print(f'Processing information: {information.value} at depth {depth}')
         self._pause_monitor_thread()
 
+        # Step 0. Determine user's disposition at depth 0.
+        if depth == 0:
+            user_disposition = self._determine_user_disposition()
+            if user_disposition == 'positive' or self._num_rounds == self._max_round:
+                self._reset()
+                self._resume_monitor_thread()
+                return
+            elif user_disposition == 'negative':
+                self._num_rounds += 1
+
         # Step 1. Given the latest information passed to process and existing information
         # in the information cache, it first picks a task.
         task_spec_for_picked_task = self._pick_a_task()
@@ -294,11 +310,26 @@ class Agent:
 
         # Step 3. Check if more processing is needed.
         if self._is_process_finished:
-            self._reset()
             self._resume_monitor_thread()
-            return
         else:
             self._process(information, depth + 1)
+
+    def _determine_user_disposition(self):
+        task_spec = TaskSpec(
+            self._task_specs_root_path,
+            self._prompts_root_path,
+            task_spec_path=os.getenv('TASK_SPEC_FOR_DETERMINE_USER_DISPOSITION')
+        )
+        result = self._execute_a_task(task_spec)
+        if 'task_determine_user_disposition:disposition' not in result or \
+                'task_determine_user_disposition:disposition' not in result:
+            return None
+        disposition = result['task_determine_user_disposition:disposition'].value
+        reasoning = result['task_pick_a_task_output:reasoning'].value
+        if self._is_verbose:
+            print(f'User disposition is: {disposition}')
+            print(f'Reasoning: {reasoning}')
+        return disposition
 
     def _pick_a_task(self) -> Optional[TaskSpec]:
         """
@@ -310,10 +341,15 @@ class Agent:
         task_spec = TaskSpec(
             self._task_specs_root_path,
             self._prompts_root_path,
-            task_spec_path=os.getenv('TASK_SPEC_FOR_PICK_A_TASK')
+            task_spec_path=os.getenv('TASK_SPEC_FOR_PICK_A_TASK'),
+            task_prompt_injection=None if self._num_rounds < self._max_round
+            else 'This is the final round of the current conversation. '
+                 'Pick a task that so that with all former information,'
+                 'the user is given top 3 suggestions.'
         )
         result = self._execute_a_task(task_spec)
-        if 'task_pick_a_task_output:task_name' not in result or 'task_pick_a_task_output:reasoning' not in result:
+        if 'task_pick_a_task_output:task_name' not in result or \
+                'task_pick_a_task_output:reasoning' not in result:
             return None
         task_name = result['task_pick_a_task_output:task_name'].value
         reasoning = result['task_pick_a_task_output:reasoning'].value
@@ -323,7 +359,11 @@ class Agent:
         return TaskSpec(
             self._task_specs_root_path,
             self._prompts_root_path,
-            task_spec_path=get_task_spec_path_by_name(task_name)
+            task_spec_path=get_task_spec_path_by_name(task_name),
+            task_prompt_injection=None if self._num_rounds < self._max_round
+            else 'This is the final round of the current conversation. '
+                 'When executing the task, please make sure that the user '
+                 'is given top 3 suggestions, based on all the historical information listed below.'
         )
 
     def _execute_a_task(self, task_spec: TaskSpec) -> Dict:
@@ -387,10 +427,13 @@ class Agent:
             task_output: Dict = self._execute_a_task(task_spec.next_task)
             informations.update(task_output)
         if task_spec.is_response_generating_task:
-            self._talk(self._information_cache.get_most_recent_information_by_substring(RESPONSE_INFO_KEY).value)
+            self._talk(self._information_cache.get_most_recent_information_by_substring(
+                RESPONSE_INFO_KEY).value)
 
         # Step 7. Check if this task is a terminating task. i.e. no more processing is needed.
-        self._is_process_finished = task_spec.is_terminating_task or self._is_process_finished
+        self._is_process_finished = \
+            task_spec.is_terminating_task or \
+            self._is_process_finished
         if self._is_verbose:
             print(f'Is process {threading.current_thread().ident} | '
                   f'task_name {task_spec.name} finished? {self._is_process_finished}')
@@ -399,7 +442,8 @@ class Agent:
         return informations
 
     @staticmethod
-    def _execute_actions(action_names: List[str], arg_key_to_arg_val: Dict, is_verbose: bool) -> Optional[Dict]:
+    def _execute_actions(action_names: List[str], arg_key_to_arg_val: Dict, is_verbose: bool) -> \
+            Optional[Dict]:
         """
         Execute a pipeline of actions given the initial arg_key_to_arg_val.
         """
@@ -463,13 +507,16 @@ class Agent:
                 print('No output information queue is set up.')
 
     def _reset(self):
-        self._current_objective = []
         self._task_history = []
 
         self._long_term_memory.add_short_term_memory(self._information_cache)
         self._information_cache.reset()
 
         self._is_process_finished = False
+        self._num_rounds = 0
+
+        # TODO: Reset self._current_objective, once some logic is implemented to support
+        #   shifting of objectives after an agent becomes live.
 
         # TODO: Also, reset the priorities for all information sources to default value.
 
@@ -514,9 +561,10 @@ class Agent:
                 arg_key_to_arg_val[information_name] = (
                     special_information_key_to_val)[information_name]
             elif self._information_cache.get_most_recent_information_name_containing_substring(
-                information_name
+                    information_name
             ) is not None:
-                information = self._information_cache.get_most_recent_information_by_substring(information_name)
+                information = self._information_cache.get_most_recent_information_by_substring(
+                    information_name)
                 arg_key_to_arg_val[information.name] = information.value
         arg_key_to_arg_val['information_cache'] = self._information_cache
         return arg_key_to_arg_val
