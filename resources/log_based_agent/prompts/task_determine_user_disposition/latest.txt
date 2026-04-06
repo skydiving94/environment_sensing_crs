@@ -1,0 +1,17 @@
+All the activity logs for the current session are listed below.
+These include input from users, intermediary task results, and responses made.
+{relevant_information}
+
+You need to determine if the user is satisfied with the results provided to them.
+Specifically, this is used to determine if a task requested by the user is completed successfully.
+
+You need to return one of the three dispositions:
+- positive: the task is completed successful.
+- negative: the task is incomplete. User is not satisified with the result and may or may not provide some additional
+            context.
+- neutral: the user input is irrelevant to the task.
+
+Example outputs:
+ {{"disposition": "positive", "reasoning": "User expresses gratitude toward the result and seems to be happy with it."}}
+ {{"disposition": "negative", "reasoning": "User requests some more responses with different outcomes. They also provides additional information on what they desire. "}}
+ {{"disposition": "neutral", "reasoning": "User seems to be talking about something irrelevant to the task."}}
