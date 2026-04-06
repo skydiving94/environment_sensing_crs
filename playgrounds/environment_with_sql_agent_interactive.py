@@ -15,7 +15,9 @@ def main():
         agent_id='sql_agent',
         role_description='You are a SQL agent writing and executing SQL queries.',
         current_objective='Write and execute SQL queries, '
-                          'and then, return the response in natural language back to user.')
+                          'and then, return the response in natural language back to user.',
+        should_output_json=True
+    )
 
     print('Registering sql_agent to env')
     # agent.register_environment(env)
@@ -29,7 +31,7 @@ def main():
 
     print(env.get_all_agent_status())
 
-    sql_agent.listen('Find the best average rating movie.')
+    sql_agent.listen('Find the best average rating action movie.')
 
 
 if __name__ == '__main__':
