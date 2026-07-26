@@ -17,7 +17,7 @@ from src.task import get_stringified_all_available_task_name_description_pairs, 
 from src.task.task_spec import TaskSpec
 from src.utils.collection_utils import stringify_collection_as_unordered_list
 from src.utils.environment_utils import get_agent_output_information_name
-from src.utils.typed_dicts.interaction_history import InteractionHistory
+from src.utils.typed_dicts.generic_task_state import GenericTaskState
 
 load_dotenv()
 
@@ -60,7 +60,7 @@ class Agent:
     _task_history: List[str]
     _information_cache: InformationCache
     _long_term_memory: LongTermMemory
-    _interaction_history: List[InteractionHistory]
+    _interaction_history: List[GenericTaskState]
     _is_process_finished: bool
 
     _environment: Optional[Environment]

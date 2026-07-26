@@ -72,6 +72,6 @@ class TaskInstance:
             informations[key_with_task_name] = Information(
                 raw_value,
                 key_with_task_name,
-                info_spec['information_type'],
+                info_spec.information_type,
                 info_spec)
         return informations
