@@ -1,5 +1,4 @@
-import threading
-from collections import deque
+import asyncio
 from typing import List, Dict, Optional, Set
 
 from src.memory.information import Information
@@ -8,14 +7,13 @@ from src.utils.environment_utils import get_agent_output_information_name
 
 class Environment:
     _agent_ids: Set[str]
-    # Could be better with priority values.
-    _information_sources: Dict[str, deque[Information]]
+    _information_sources: Dict[str, asyncio.Queue]
 
     """
     Fields for monitoring the information sources for outputs from an agent.
     """
-    _monitor_thread: threading.Thread
-    _stop_event: threading.Event
+    _monitor_task: Optional[asyncio.Task]
+    _stop_event: Optional[asyncio.Event]
 
     def __init__(self,
                  agent_ids: Optional[Set[str]] = None,
@@ -23,18 +21,12 @@ class Environment:
         self._agent_ids = agent_ids if agent_ids is not None else set()
         self._information_sources = {}
 
+        self._monitor_task = None
+        self._stop_event = None
+
         if information_names is not None:
             for information_name in information_names:
                 self.init_information_source(information_name)
-
-        self._start_monitor_thread()
-
-    def __del__(self):
-        """
-        Destructor is called when an object is destroyed.
-        The monitor threads should hence be terminated.
-        """
-        self._stop_monitor_thread()
 
     def __str__(self) -> str:
         return f'''
@@ -51,11 +43,10 @@ Information Sources: {list(self._information_sources.keys())}
     def init_information_source(self, information_name: str):
         """
         Initialize a new information source.
-        :param information_name: The name of the information.
         """
-        self._information_sources[information_name] = deque()
+        self._information_sources[information_name] = asyncio.Queue()
 
-    def get_information_source_by_name(self, information_name: str) -> deque[Information]:
+    def get_information_source_by_name(self, information_name: str) -> asyncio.Queue:
         if information_name not in self._information_sources.keys():
             self.init_information_source(information_name)
         return self._information_sources[information_name]
@@ -63,52 +54,46 @@ Information Sources: {list(self._information_sources.keys())}
     def get_all_agent_status(self) -> Dict[str, str]:
         """
         Get the status of all agents.
-        :return: A dictionary of agent_id to status.
         """
-        # TODO: Implement different status for agents,
-        #  using information from monitor_thread
-        # Note: Maybe we can also move this function, together with the logic of
-        # environment_with_one_agent to a new class called Session?
-        # A Session would hold an environment and multiple agents.
-        # That way we can avoid having circular references?
         return {agent_id: 'OK' for agent_id in self._agent_ids}
 
-    def add_information_to_information_source(self, information_name: str,
-                                              information_val: Information) -> None:
+    async def add_information_to_information_source(self, information_name: str,
+                                                    information_val: Information) -> None:
         """
-        This should allow an agent to add some new information to an information source.
-        :param information_name: The name of the information source.
-        :param information_val: The actual value.
+        This allows an agent to add some new information to an information source.
         """
-        raise NotImplementedError
+        if information_name not in self._information_sources:
+            self.init_information_source(information_name)
+        await self._information_sources[information_name].put(information_val)
 
-    def _monitor(self):
+    async def _monitor(self):
         """
-        Monitor all information sources related to agent output.
+        Monitor all information sources related to agent output asynchronously.
         Print out any agent response if available.
         """
+        if self._stop_event is None:
+            return
+        
         while not self._stop_event.is_set():
             for agent_id in set(self._agent_ids):
                 information_name = get_agent_output_information_name(agent_id)
-                # TODO: How do you know information_name is in self._information_sources?
                 if information_name in self._information_sources.keys():
-                    while len(self._information_sources[information_name]) > 0:
-                        print(
-                            f'Agent {agent_id}: '
-                            f'{self._information_sources[information_name][0].value}'
-                            )
-                        self._information_sources[information_name].popleft()
-                else:
-                    print(information_name, "not in self._information_sources.keys()")
-                    pass
+                    queue = self._information_sources[information_name]
+                    while not queue.empty():
+                        info = await queue.get()
+                        print(f'Agent {agent_id}: {info.value}')
+                        queue.task_done()
+            await asyncio.sleep(0.05)
 
-    def _start_monitor_thread(self):
-        self._stop_event = threading.Event()
+    def start(self):
+        if self._monitor_task is None or self._monitor_task.done():
+            self._stop_event = asyncio.Event()
+            self._monitor_task = asyncio.create_task(self._monitor())
 
-        self._monitor_thread = threading.Thread(target=self._monitor)
-        self._monitor_thread.start()
-
-    def _stop_monitor_thread(self):
-        print('Stopping monitor thread...')
-        self._stop_event.set()
-        self._monitor_thread.join()
+    async def stop(self):
+        if self._stop_event and not self._stop_event.is_set():
+            print('Stopping environment monitor task...')
+            self._stop_event.set()
+        if self._monitor_task:
+            await self._monitor_task
+            self._monitor_task = None
