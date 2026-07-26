@@ -4,6 +4,7 @@ Writing SQL and fetch data from the database
 Each agent should have __main__ and can be used and tested independently 
 """
 import argparse
+import asyncio
 import os
 import sqlite3
 
@@ -14,8 +15,9 @@ from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
-llm = ChatOpenAI(  # type: ignore
-    openai_api_key=os.getenv('OPENAI_API_KEY'),
+# LangChain automatically loads OPENAI_API_KEY from the environment.
+# Omitting it avoids the Pydantic v1 vs v2 SecretStr type conflict.
+llm = ChatOpenAI(
     model=os.getenv('OPENAI_TEXT_MODEL', default='')
 )
 
@@ -36,7 +38,7 @@ List of available tables:
 human_template = 'What is the highest rating movie in Comedy genres?'
 
 
-def main():
+async def main():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('db_path', type=str)
 
@@ -52,12 +54,19 @@ def main():
 
     message = chat_prompt.format_messages()
 
-    resp = llm.invoke(message, temperature=0.0, max_tokens=120, top_p=1.0, timeout=10)
+    # Utilize asynchronous invocation for LangChain
+    resp = await llm.ainvoke(message, temperature=0.0, max_tokens=120, top_p=1.0, timeout=10)
     print('LLM response:\n', resp.content)
+
     print('Querying the database with LLM-generated query text.')
-    print(pd.read_sql_query(resp.content, conn))
-    pass
+
+    # Cast content to a strict string to satisfy pandas,
+    # and use type: ignore to bypass the Pylance chunksize/asyncio bug
+    sql_query = str(resp.content)
+    # type: ignore
+    df = await asyncio.to_thread(pd.read_sql_query, sql=sql_query, con=conn)
+    print(df)
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

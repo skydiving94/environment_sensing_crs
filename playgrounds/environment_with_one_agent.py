@@ -1,8 +1,9 @@
+import asyncio
 from src.agent.agent_factory import AgentFactory
 from src.environment.environment import Environment
 
 
-def main():
+async def main():
     print('Creating an empty environment')
     env = Environment()
     print(str(env))
@@ -23,8 +24,25 @@ def main():
 
     print(env.get_all_agent_status())
 
-    agent.listen('Hello World!')
+    # Start the async monitoring tasks
+    env.start()
+    agent.start()
+
+    print("\n[Sending Request]")
+    await agent.listen('Hello World!')
+
+    # Wait for the agent to finish thinking before shutting down
+    await asyncio.sleep(0.5)
+    if hasattr(agent, '_pause_event') and agent._pause_event is not None:
+        while not agent._pause_event.is_set():
+            await asyncio.sleep(0.5)
+
+    await asyncio.sleep(0.5)
+
+    print("\n[Shutting Down Services...]")
+    await agent.stop()
+    await env.stop()
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

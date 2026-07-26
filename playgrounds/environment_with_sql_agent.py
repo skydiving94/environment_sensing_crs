@@ -1,8 +1,9 @@
+import asyncio
 from src.agent.agent_factory import AgentFactory
 from src.environment.environment import Environment
 
 
-def main():
+async def main():
     print('Creating an empty environment')
     env = Environment()
     print(str(env))
@@ -17,19 +18,34 @@ def main():
         current_objective='Write and execute SQL queries.')
 
     print('Registering interactive_sql_agent to env')
-    # agent.register_environment(env)
     sql_agent.register_environment(env)
     print(str(env))
 
     print('Registering interactive_sql_agent with an info name: INFO2')
-    # agent.register_information_queue('INFO1')
     sql_agent.register_information_queue('INFO2')
     print(str(env))
 
     print(env.get_all_agent_status())
 
-    sql_agent.listen('Find the best average rating movie.')
+    # Start the async monitoring tasks
+    env.start()
+    sql_agent.start()
+
+    print("\n[Sending Request]")
+    await sql_agent.listen('Find the best average rating movie.')
+
+    # Wait for the agent to finish thinking before shutting down
+    await asyncio.sleep(0.5)
+    if hasattr(sql_agent, '_pause_event') and sql_agent._pause_event is not None:
+        while not sql_agent._pause_event.is_set():
+            await asyncio.sleep(0.5)
+
+    await asyncio.sleep(0.5)
+
+    print("\n[Shutting Down Services...]")
+    await sql_agent.stop()
+    await env.stop()
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
