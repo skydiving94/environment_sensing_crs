@@ -164,3 +164,5 @@ dataset/**
 ./dataset/GoRecDial/
 !./dataset/*.py
 !./dataset/*.ipynb
+
+**/.DS_Store
