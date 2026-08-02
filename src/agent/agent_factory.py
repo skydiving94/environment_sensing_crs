@@ -11,6 +11,15 @@ from src.memory.information_cache.log_based_task_agnostic_information_cache impo
 from src.memory.long_term_memory import LongTermMemory
 from src.memory.long_term_memory.sequential_long_term_memory import SequentialLongTermMemory
 
+from src.llm.llm_client import BaseLLMClient
+from src.llm.openai_client import OpenAILLMClient
+
+from src.prompt_builder.base_schema_builder import BaseSchemaBuilder
+from src.prompt_builder.openai_schema_builder import OpenAISchemaBuilder
+
+from src.response_parser.base_response_parser import BaseResponseParser
+from src.response_parser.openai_response_parser import OpenAIResponseParser
+
 load_dotenv()
 
 
@@ -22,20 +31,17 @@ class AgentFactory:
     - in_information_queue_names
     - out_information_queue_names
     - llm_provider
-    Note: environment and information queue names can be left as None, and can be registered to
-        each agent one by one.
-
-    Two types of agents are supported at the moment:
-    - log_based_agent
-    - knowledge_based_agent
     """
 
     _resource_root_path: str
     _environment: Optional[Environment]
     _in_information_queue_names: Optional[List[str]]
     _out_information_queue_names: Optional[List[str]]
-    _llm_provider: str
-    _current_objective: Optional[str]
+
+    # The concrete dependencies to be injected into agents
+    _llm_client: BaseLLMClient
+    _schema_builder: BaseSchemaBuilder
+    _response_parser: BaseResponseParser
 
     def __init__(
         self,
@@ -46,14 +52,25 @@ class AgentFactory:
         llm_provider: str = 'openai',
     ):
         if code_root_path is not None:
-            self._resource_root_path = os.path.join(code_root_path, 'resources')
+            self._resource_root_path = os.path.join(
+                code_root_path, 'resources')
         else:
             raise ValueError('CODE_ROOT_PATH is not valid!')
 
         self._environment = environment
         self._in_information_queue_names = in_information_queue_names
         self._out_information_queue_names = out_information_queue_names
-        self._llm_provider = llm_provider
+
+        provider_clean = llm_provider.strip().lower()
+
+        # DI Container: Instantiate the correct platform-specific tools once
+        if provider_clean == 'openai':
+            self._llm_client = OpenAILLMClient()
+            self._schema_builder = OpenAISchemaBuilder()
+            self._response_parser = OpenAIResponseParser()
+        else:
+            raise ValueError(
+                f"LLM Provider '{llm_provider}' is not supported.")
 
     def create_knowledge_based_agent(
         self,
@@ -62,12 +79,6 @@ class AgentFactory:
         current_objective: Optional[str] = None
     ):
         raise NotImplementedError
-        # return self._create_agent(
-        #     agent_id,
-        #     role_description,
-        #     os.path.join(self._resource_root_path, 'knowledge_based_agent'),
-        #     current_objective
-        # )
 
     def create_log_based_agent(
         self,
@@ -97,15 +108,20 @@ class AgentFactory:
         is_verbose: bool = False
     ):
         return Agent(
-            agent_id,
-            role_description,
-            resource_root_path,
-            information_cache,
-            long_term_memory,
-            self._environment,
-            self._in_information_queue_names,
-            self._out_information_queue_names,
-            self._llm_provider,
-            current_objective,
-            is_verbose
+            agent_id=agent_id,
+            role_description=role_description,
+            resource_root_path=resource_root_path,
+            information_cache=information_cache,
+            long_term_memory=long_term_memory,
+
+            # Inject the interfaces, not the raw string
+            llm_client=self._llm_client,
+            schema_builder=self._schema_builder,
+            response_parser=self._response_parser,
+
+            environment=self._environment,
+            in_information_queue_names=self._in_information_queue_names,
+            out_information_queue_names=self._out_information_queue_names,
+            current_objective=current_objective,
+            is_verbose=is_verbose
         )

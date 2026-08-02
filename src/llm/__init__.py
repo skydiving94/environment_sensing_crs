@@ -1,9 +1,11 @@
-from src.llm.openai import openai_llm
+from src.llm.llm_client import BaseLLMClient
+from src.llm.openai_client import OpenAILLMClient
 
 
-def get_llm_instance(llm_provider: str = 'openai'):
-    match llm_provider:
+def get_llm_instance(llm_provider: str = 'openai') -> BaseLLMClient:
+    provider_clean = llm_provider.strip().lower()
+    match provider_clean:
         case 'openai':
-            return openai_llm
+            return OpenAILLMClient()
         case _:
             raise ValueError(f'{llm_provider} is not supported.')

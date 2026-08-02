@@ -9,9 +9,12 @@ from langchain_core.language_models import BaseChatModel
 from src.agent.actions import get_all_available_action_data
 from src.environment.environment import Environment
 from src.llm import get_llm_instance
+from src.llm.llm_client import BaseLLMClient
 from src.memory.information import Information
 from src.memory.information_cache import InformationCache
 from src.memory.long_term_memory import LongTermMemory
+from src.prompt_builder.base_schema_builder import BaseSchemaBuilder
+from src.response_parser.base_response_parser import BaseResponseParser
 from src.task import get_stringified_all_available_task_name_description_pairs, \
     get_task_spec_path_by_name
 from src.task.task_spec import TaskSpec
@@ -53,7 +56,7 @@ class Agent:
     _prompts_root_path: str
     _resource_root_path: str
     _task_specs: List[TaskSpec]
-    _llm_instance: BaseChatModel
+    _llm_instance: BaseLLMClient
     _is_verbose: bool = False
 
     _current_objective: List[str]
@@ -79,6 +82,9 @@ class Agent:
         resource_root_path: str,
         information_cache: InformationCache,
         long_term_memory: LongTermMemory,
+        llm_client: BaseLLMClient,
+        schema_builder: BaseSchemaBuilder,
+        response_parser: BaseResponseParser,
         environment: Optional[Environment] = None,
         in_information_queue_names: Optional[List[str]] = None,
         out_information_queue_names: Optional[List[str]] = None,
@@ -92,7 +98,9 @@ class Agent:
         self._task_specs_root_path = os.path.join(
             resource_root_path, 'task_specs')
         self._prompts_root_path = os.path.join(resource_root_path, 'prompts')
-        self._llm_instance = get_llm_instance(llm_provider)
+        self._llm_instance = llm_client
+        self._schema_builder = schema_builder
+        self._response_parser = response_parser
 
         self._in_information_queues = dict()
         self._out_information_queues = dict()
@@ -262,8 +270,11 @@ class Agent:
 
         if task_spec.is_llm_task:
             task_instance = task_spec.build_task_instance(prompt_key_to_val)
-            # Await the LLM generation heavily blocking mechanism gracefully
-            triggered_info = await asyncio.to_thread(task_instance.trigger, self._llm_instance)
+            triggered_info = await task_instance.trigger(
+                llm_instance=self._llm_instance,
+                schema_builder=self._schema_builder,
+                response_parser=self._response_parser
+            )
             informations.update(triggered_info)
 
         if self._is_verbose:
