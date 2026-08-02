@@ -363,7 +363,10 @@ class Agent:
                 self._current_objective[0] if len(
                     self._current_objective) > 0 else 'None', task_spec,
             ),
-            PAST_INFORMATION: self._long_term_memory.retrieve_all_information_as_text(),
+            PAST_INFORMATION: '\n'.join(
+                [str(m.raw_value) for m in self._long_term_memory.search_memories(
+                    query="", top_k=50)]
+            ),
         }
 
     def _build_arg_key_to_arg_val(self, task_spec: TaskSpec) -> Dict[str, Any]:
@@ -413,7 +416,7 @@ class Agent:
     def _resume_monitor_task(self):
         if self._pause_event:
             self._pause_event.set()
-            
+
     def _handle_monitor_crash(self, task: asyncio.Task):
         """Callback to surface silent errors from the background monitor task."""
         try:

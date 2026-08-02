@@ -11,19 +11,13 @@ class SearchLTMArgs(BaseModel):
 def search_long_term_memory(args: SearchLTMArgs, long_term_memory: LongTermMemory, **kwargs) -> str:
     """Searches the agent's long-term semantic memory for historical facts or past context."""
 
-    try:
-        # Attempt to use the interface's intended context retrieval method
-        results = long_term_memory.retrieve_unstructured_information_for_context(
-            current_objective="Recall historical context",
-            task_description=args.query
-        )
-        return f"SYSTEM RESULT:\n{results}"
-    except NotImplementedError:
-        # Fallback since SequentialLongTermMemory currently raises NotImplementedError
-        all_memory = long_term_memory.retrieve_all_information_as_text()
+    # Use the new generic search_memories method
+    results = long_term_memory.search_memories(query=args.query, top_k=5)
 
-        # Extremely basic text search for demonstration
-        if args.query.lower() in all_memory.lower():
-            return f"SYSTEM RESULT: Memory scan found relevant context:\n{all_memory}"
-        else:
-            return f"SYSTEM RESULT: No direct matches found for '{args.query}'. Dump of all memory:\n{all_memory}"
+    if not results:
+        return f"SYSTEM RESULT: No direct matches found for '{args.query}'."
+
+    # Format and return the results
+    formatted_results = "\n\n".join(
+        [f"Result {i+1}:\n{res.raw_value}" for i, res in enumerate(results)])
+    return f"SYSTEM RESULT: Memory scan found relevant context:\n{formatted_results}"
