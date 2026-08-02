@@ -1,20 +1,33 @@
+import importlib
+import inspect
+import pkgutil
 from typing import Callable, Any, Tuple, Optional, Dict
 
-from src.agent.actions.collect_information_by_names import do_collect_information_by_names
-from src.agent.actions.query_sql_database import do_query_sql_database
+_ACTION_REGISTRY: Dict[str, Tuple[Optional[str], Callable[..., Any]]] = {}
+
+
+def action_tool(name: str):
+    """Decorator to regsiter an action tool in the central ActionRegistry."""
+    def decorator(func: Callable[..., Any]):
+        docstring = inspect.getdoc(func) or f"Execute {name} action."
+        _ACTION_REGISTRY[name] = (docstring, func)
+        return func
+    return decorator
+
+
+def _load_all_actions():
+    """Dynamically imports all modules in the src.agent.actions package to trigger the 
+    @action_tool decorators and populate the registry on startup."""
+    import src.agent.actions
+    for _, module_name, is_pkg in pkgutil.iter_modules(src.agent.actions.__path__):
+        if not is_pkg:
+            importlib.import_module(f"src.agent.actions.{module_name}")
 
 
 def get_all_available_action_data() -> Dict[str, Tuple[Optional[str], Callable[..., Any]]]:
+    """Fetch all dynamically registered actions, together with their doc string descriptions.
+    :return: A dict mapping the name of the action to its description and callable function.
     """
-    Fetch all functions with names starting as do_*, together with their doc string
-    descriptions.
-    :return: A dict that maps name of the action to the optional description of the action,
-    and the actual function.
-    """
-
-    # FIXME: Implement this function! Load all actions from actions directory.
-    return {
-        'do_query_sql_database': ('execute a SQL query', do_query_sql_database),
-        'do_collect_information_by_names':
-            ('Collect all information by information names', do_collect_information_by_names)
-    }
+    if not _ACTION_REGISTRY:
+        _load_all_actions()
+    return _ACTION_REGISTRY

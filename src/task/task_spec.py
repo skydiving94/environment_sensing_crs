@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
 
+from src.agent.actions import get_all_available_action_data
 from src.task import get_all_task_spec_paths
 from src.task.task_instance import TaskInstance
 from src.utils.prompt_utils import load_prompt_template, replace_all_keys_in_prompt_template
@@ -85,8 +86,14 @@ class TaskSpec:
         self.output_information_spec = \
             {k: parse_information_spec(v) for k, v in output_information_spec.items()}
         self.output_information_spec_str = json.dumps(output_information_spec)
+        
         self.action_names = (
             task_spec_dict['action_names'] if 'action_names' in task_spec_dict else [])
+        available_actions = get_all_available_action_data()
+        for action_name in self.action_names:
+            if action_name not in available_actions:
+                raise ValueError(f"Action '{action_name}' is not registered. ")
+        
         self.temperature = task_spec_dict['temperature'] \
             if 'temperature' in task_spec_dict \
             else 0.5

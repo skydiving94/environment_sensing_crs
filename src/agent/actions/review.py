@@ -2,12 +2,17 @@ from typing import List
 
 from src.memory.information_cache import InformationCache
 from src.utils.typed_dicts.review_result import ReviewResult
+from src.agent.actions import action_tool
 
 
+@action_tool(name="do_review")
 def do_review(
         system_prompt: str,
         task_prompt: str,
         information_cache: InformationCache) -> ReviewResult:
+    """
+    Review the action result from another agent based on the provided system and task prompts.
+    """
     raise NotImplementedError
 
 

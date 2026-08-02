@@ -3,9 +3,14 @@ from copy import deepcopy
 from typing import Dict, List
 
 from src.memory.information_cache import InformationCache
+from src.agent.actions import action_tool
 
 
+@action_tool(name="do_collect_information_by_names")
 def do_collect_information_by_names(**kwargs) -> Dict[str, str]:
+    """
+    Collect all information from the cache based on specified information names.
+    """
     information_names_for_response_generation = (
         kwargs['information_names_for_response_generation']
         if 'information_names_for_response_generation' in kwargs else []
