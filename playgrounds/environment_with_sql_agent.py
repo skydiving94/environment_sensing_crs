@@ -15,7 +15,10 @@ async def main():
     sql_agent = agent_factory.create_log_based_agent(
         agent_id='sql_agent',
         role_description='You are a SQL agent writing and executing SQL queries.',
-        current_objective='Write and execute SQL queries.')
+        current_objective='Write and execute SQL queries.',
+        is_verbose=True
+    )
+    print(str(env))
 
     print('Registering interactive_sql_agent to env')
     sql_agent.register_environment(env)

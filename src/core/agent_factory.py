@@ -21,6 +21,15 @@ from src.adapters.response_parser.openai_response_parser import OpenAIResponsePa
 
 load_dotenv()
 
+MEMORY_MANAGEMENT_INSTRUCTION = (
+    "\n\n[SYSTEM OS CAPABILITIES: AUTONOMOUS MEMORY MANAGEMENT]\n"
+    "You are an AI agent with a persistent, tiered memory architecture. Your active context window is limited. "
+    "You MUST actively manage your own memory state using your available tools:\n"
+    "1. write_to_cache: Use this tool to save extracted facts, user preferences, or vital data to your active Core Memory. "
+    "If you do not explicitly save important information, you will forget it in future turns.\n"
+    "2. search_long_term_memory: If you lack the context to answer a query, use this tool to search your historical archives."
+)
+
 
 class AgentFactory:
     """
@@ -106,9 +115,10 @@ class AgentFactory:
         current_objective: Optional[str] = None,
         is_verbose: bool = False
     ):
+        augmented_role_description = f"{role_description}\n{MEMORY_MANAGEMENT_INSTRUCTION}"
         return Agent(
             agent_id=agent_id,
-            role_description=role_description,
+            role_description=augmented_role_description,
             resource_root_path=resource_root_path,
             information_cache=information_cache,
             long_term_memory=long_term_memory,
