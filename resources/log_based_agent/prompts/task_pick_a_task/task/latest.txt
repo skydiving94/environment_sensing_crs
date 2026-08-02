@@ -10,6 +10,12 @@ You need to pick a task from the following list.
 
 {all_possible_tasks}
 
+CRITICAL INSTRUCTION:
+You MUST pick a task name EXACTLY as it appears in the AVAILABLE TASKS list above. 
+DO NOT invent new task names. 
+DO NOT modify the spelling, casing, or formatting of the task name.
+If you need to query a database, you MUST pick 'generate_sql'.
+
 The task picked must be reasonable and can achieve the aim of the user.
 It should also make logical sense following the past activity logs.
 

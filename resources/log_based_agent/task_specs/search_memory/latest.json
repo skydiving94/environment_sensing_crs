@@ -1,0 +1,16 @@
+{
+  "name": "search_memory",
+  "description": "Pick this task if the current objective requires historical context, past user preferences, or facts that are not available in your current active Information Cache.",
+  "system_prompt_template": "task_search_memory/latest.txt",
+  "action_names": ["search_long_term_memory"],
+  "output_information_spec": {
+    "search_results": {
+      "item_type": "STRING",
+      "description": "The formatted text results returned from the search tool."
+    },
+    "reasoning": {
+      "item_type": "STRING",
+      "description": "Explain why you searched for this context and how it applies to the user's objective."
+    }
+  }
+}

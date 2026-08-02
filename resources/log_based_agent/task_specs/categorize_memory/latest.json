@@ -1,0 +1,12 @@
+{
+  "name": "categorize_memory",
+  "description": "SYSTEM TASK: Categorizes raw activity logs into semantic context types for long-term vector storage.",
+  "system_prompt_template": "task_categorize_memory/latest.txt",
+  "action_names": [],
+  "output_information_spec": {
+    "categorized_logs": {
+      "item_type": "STRING",
+      "description": "A strict JSON object where the keys are the exact log IDs/texts provided, and the values are the assigned snake_case category strings."
+    }
+  }
+}

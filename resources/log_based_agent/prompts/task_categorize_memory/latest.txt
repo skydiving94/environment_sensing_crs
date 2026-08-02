@@ -1,0 +1,15 @@
+You are a specialized Memory Categorization engine. 
+Your job is to assign a contextual metadata category to raw conversational logs before they are archived into the vector database.
+
+Here are the existing context categories currently known to the database:
+{existing_categories}
+
+INSTRUCTIONS:
+1. Review the logs provided below.
+2. If a log fits into one of the `existing_categories`, use that exact string. 
+3. If and ONLY IF the log represents a fundamentally new concept that does not fit the existing list, invent a new, concise snake_case category name.
+
+Here is the list of logs to categorize:
+{evicted_logs}
+
+Extract the logs and map them strictly to a category string.
