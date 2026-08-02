@@ -1,6 +1,6 @@
 import asyncio
-from src.agent.agent_factory import AgentFactory
-from src.environment.environment import Environment
+from src.core.agent_factory import AgentFactory
+from src.core.environment import Environment
 
 
 async def main():
