@@ -1,75 +1,114 @@
 import os
+import json
+from pathlib import Path
 from typing import Tuple, List, Dict
+from dotenv import load_dotenv
 
+load_dotenv()
+
+# --- Internal Cache to prevent repeated disk I/O ---
+_TASK_CACHE_LOADED = False
+_TASK_PATHS_CACHE: Dict[str, str] = {}
+_TASK_DESCRIPTIONS_CACHE: Dict[str, str] = {}
+
+
+def _ensure_tasks_loaded():
+    """
+    Dynamically scans the resources directory for JSON task specifications
+    and builds the internal registry cache.
+    """
+    global _TASK_CACHE_LOADED, _TASK_PATHS_CACHE, _TASK_DESCRIPTIONS_CACHE
+    if _TASK_CACHE_LOADED:
+        return
+
+    # Rely on the environment variable, just like TaskSpec does.
+    # Fallback to a relative path if not defined.
+    task_spec_root_str = os.getenv(
+        'TASK_SPEC_DIR', 'resources/log_based_agent/task_specs/')
+
+    # Resolve the absolute path of the root task specs directory
+    base_dir = Path(os.getcwd())
+    task_spec_dir = base_dir / task_spec_root_str
+
+    # If not found via CWD, try relative to this file
+    if not task_spec_dir.exists():
+        task_spec_dir = Path(__file__).resolve(
+        ).parent.parent.parent.parent / task_spec_root_str
+
+    if not task_spec_dir.exists():
+        print(
+            f"WARNING: Could not locate Task Spec directory at {task_spec_dir}.")
+        return
+
+    # Recursively find all json files in the defined task_spec directory
+    for json_path in task_spec_dir.rglob('*.json'):
+        # Ignore template directories
+        if '_template_' in json_path.parts:
+            continue
+
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                spec_data = json.load(f)
+
+            task_name = spec_data.get('name')
+            description = spec_data.get(
+                'description', 'No description provided.')
+
+            if not task_name:
+                continue
+
+            # Version resolution: Prefer 'latest.json' if multiple exist
+            existing_path = _TASK_PATHS_CACHE.get(task_name, "")
+            if existing_path.endswith('latest.json') and json_path.name != 'latest.json':
+                continue  # Keep the existing latest version
+
+            try:
+                rel_path = str(json_path.relative_to(task_spec_dir))
+            except ValueError:
+                # Fallback if relative_to fails
+                rel_path = str(json_path.name)
+
+            _TASK_PATHS_CACHE[task_name] = rel_path
+            _TASK_DESCRIPTIONS_CACHE[task_name] = description
+
+        except Exception as e:
+            print(f"Error dynamically loading task spec {json_path}: {e}")
+
+    _TASK_CACHE_LOADED = True
+
+
+# --- Public Interface (Signatures Intact) ---
 
 def get_task_spec_path_by_name(task_spec_name: str) -> str:
-    return get_all_task_spec_paths()[task_spec_name]
+    _ensure_tasks_loaded()
+    if task_spec_name not in _TASK_PATHS_CACHE:
+        raise KeyError(
+            f"Task '{task_spec_name}' not found. Ensure its JSON spec exists in {os.getenv('TASK_SPEC_DIR')}.")
+    return _TASK_PATHS_CACHE[task_spec_name]
 
 
 def get_all_task_spec_paths() -> Dict[str, str]:
     """
-    Return a map of task name to their paths corresponding to the latest version v[n].json
-     under the resource directory programmatically.
+    Return a dynamically generated map of task names to their JSON file paths.
     """
-    # Read task specs from .env
-    task_spec_paths = {
-        'draw_more_info': os.getenv('TASK_SPEC_FOR_DRAW_MORE_INFO_PATH', default=''),
-        'pick_a_task': os.getenv('TASK_SPEC_FOR_PICK_A_TASK', default=''),
-        'generate_sql': os.getenv('TASK_SPEC_FOR_GENERATE_SQL', default=''),
-        'query_sql': os.getenv('TASK_SPEC_FOR_QUERY_SQL', default=''),
-        'formulate_response': os.getenv('TASK_SPEC_FOR_FORMULATE_RESPONSE', default=''),
-        'prepare_formulate_response':
-            os.getenv(
-                'TASK_SPEC_FOR_DECIDE_INFO_FOR_PREPARE_FORMULATE_RESPONSE', default=''),
-    }
-    return task_spec_paths
+    _ensure_tasks_loaded()
+    return _TASK_PATHS_CACHE.copy()
 
 
 def get_all_available_task_name_description_pairs() -> List[Tuple[str, str]]:
     """
-    Fetch all defined tasks under resources/task_specs/[task_name]/v[n].json
-    and return their name and description.
+    Dynamically fetch all defined tasks and return their name and description.
     """
-    # FIXME: Implement the actual functionality so it can load dynamically!
-    # Maybe we can read from task_specs:description?
-    task_name_description_pairs: List[Tuple[str, str]] = [
-        (
-            'pick_a_task',
-            'The agent should decide which task it should execute given existing information.'
-        ),
-        (
-            'generate_sql',
-            'The agent should understand user\'s request and '
-            'generate SQL query to fetch the required data.'
-        ),
-        (
-            'query_sql',
-            'This task execute SQL. Not a LLM task'
-        ),
-        (
-            'prepare_formulate_response',
-            'This task determines which information names in the current memory are most relevant '
-            'to the objective at hand for generating a response'
-        ),
-        (
-            'formulate_response',
-            'This task generates a response to user using collected information suggested by '
-            '"prepare_formulate_response" and current objective and hence '
-            'should be utilized after "prepare_formulate_response" has been executed first.'
-        ),
-        (
-            'draw_more_info',
-            'The agent should keep drawing more information as the existing one is not '
-            'sufficient to make a decision on.'
-        ),
-    ]
-
-    return task_name_description_pairs
+    _ensure_tasks_loaded()
+    return [(name, desc) for name, desc in _TASK_DESCRIPTIONS_CACHE.items()]
 
 
 def get_stringified_all_available_task_name_description_pairs() -> str:
-    task_name_description_pairs = get_all_available_task_name_description_pairs()
+    """
+    Returns a formatted string of all available tasks to be injected into LLM prompts.
+    """
+    pairs = get_all_available_task_name_description_pairs()
     s = ''
-    for name, description in task_name_description_pairs:
+    for name, description in pairs:
         s += f'TASK_NAME: {name}\nTASK_DESCRIPTION: {description}\n***************\n'
     return s

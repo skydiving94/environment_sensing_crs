@@ -353,7 +353,7 @@ class Agent:
         self._action_description_pairs = get_all_available_action_data()
 
     def _get_special_information_key_to_val(self, task_spec: TaskSpec) -> Dict[str, str]:
-        return {
+        data = {
             AGENT_SPECIFIC_INFO_CURRENT_OBJECTIVE: self._current_objective[0] if len(self._current_objective) > 0 else 'None',
             AGENT_SPECIFIC_INFO_CACHE_KEYS: self._information_cache.get_information_names_str(),
             AGENT_SPECIFIC_INFO_INFORMATION_QUEUE_NAMES: stringify_collection_as_unordered_list(list(self._in_information_queues.keys())),
@@ -368,6 +368,11 @@ class Agent:
                     query="", top_k=50)]
             ),
         }
+        
+        if self._is_verbose:
+            print(f'All possible tasks: {data[ALL_POSSIBLE_TASKS]}')
+        
+        return data
 
     def _build_arg_key_to_arg_val(self, task_spec: TaskSpec) -> Dict[str, Any]:
         input_information_names = task_spec.input_information_names
